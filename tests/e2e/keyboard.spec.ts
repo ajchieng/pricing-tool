@@ -7,8 +7,11 @@ test("keyboard users can search parameters and navigate the workspace", async ({
   await page
     .getByRole("button", { name: "Load sample scenario", exact: true })
     .click();
-  const finder = page.getByRole("button", { name: /Find parameter/ });
-  await finder.focus();
+  const finderTrigger =
+    testInfo.project.name === "mobile"
+      ? page.getByRole("button", { name: "More", exact: true })
+      : page.getByRole("button", { name: /Find parameter/ });
+  await finderTrigger.focus();
   await page.keyboard.press("Control+k");
   const dialog = page.getByRole("dialog", { name: "Find a quote parameter" });
   await expect(dialog).toBeVisible();
@@ -19,14 +22,27 @@ test("keyboard users can search parameters and navigate the workspace", async ({
   await search.fill("Loan amount");
   await page.keyboard.press("Enter");
   await expect(dialog).toBeHidden();
-  await expect(
-    page.getByRole("textbox", { name: "Loan amount", exact: false }),
-  ).toBeFocused();
-  await finder.focus();
+  const loanAmount = page.getByRole("textbox", {
+    name: "Loan amount",
+    exact: false,
+  });
+  await expect(loanAmount).toBeFocused();
+  await expect(loanAmount).toBeInViewport({ ratio: 1 });
+  await finderTrigger.focus();
+  if (testInfo.project.name === "mobile") {
+    await page.keyboard.press("ArrowDown");
+    const tools = page.getByRole("menu", { name: "Quote tools", exact: true });
+    await expect(tools).toBeVisible();
+    await expect(
+      tools.getByRole("menuitem", { name: "Find parameter", exact: true }),
+    ).toBeFocused();
+  }
   await page.keyboard.press("Enter");
   await expect(dialog).toBeVisible();
+  await expect(search).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(finder).toBeFocused();
+  await expect(dialog).toBeHidden();
+  await expect(finderTrigger).toBeFocused();
 
   if (testInfo.project.name === "mobile") {
     const menu = page.getByRole("button", { name: "Open navigation" });

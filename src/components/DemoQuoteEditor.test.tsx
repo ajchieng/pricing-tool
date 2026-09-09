@@ -8,6 +8,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { ReactNode } from "react";
 import { DemoQuoteEditor } from "./DemoQuoteEditor";
 import { getQuote } from "@/lib/demo/store";
 
@@ -21,18 +22,45 @@ vi.mock("@/lib/demo/pricing", () => ({
   }),
 }));
 vi.mock("@/components/home-loans/HomeLoanQuoteForm", () => ({
-  HomeLoanQuoteForm: (props: object) => (
-    <div data-testid="home-form">{JSON.stringify(props)}</div>
+  HomeLoanQuoteForm: ({
+    header,
+    ...props
+  }: {
+    header?: { title: string; actions?: ReactNode };
+  }) => (
+    <div data-testid="home-form">
+      <h1>{header?.title}</h1>
+      {header?.actions}
+      {JSON.stringify(props)}
+    </div>
   ),
 }));
 vi.mock("@/components/personal-loans/PersonalLoanQuoteForm", () => ({
-  PersonalLoanQuoteForm: (props: object) => (
-    <div data-testid="personal-form">{JSON.stringify(props)}</div>
+  PersonalLoanQuoteForm: ({
+    header,
+    ...props
+  }: {
+    header?: { title: string; actions?: ReactNode };
+  }) => (
+    <div data-testid="personal-form">
+      <h1>{header?.title}</h1>
+      {header?.actions}
+      {JSON.stringify(props)}
+    </div>
   ),
 }));
 vi.mock("@/components/commercial-loans/CommercialLoanQuoteForm", () => ({
-  CommercialLoanQuoteForm: (props: object) => (
-    <div data-testid="commercial-form">{JSON.stringify(props)}</div>
+  CommercialLoanQuoteForm: ({
+    header,
+    ...props
+  }: {
+    header?: { title: string; actions?: ReactNode };
+  }) => (
+    <div data-testid="commercial-form">
+      <h1>{header?.title}</h1>
+      {header?.actions}
+      {JSON.stringify(props)}
+    </div>
   ),
 }));
 

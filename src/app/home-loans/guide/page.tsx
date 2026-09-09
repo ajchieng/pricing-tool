@@ -1,9 +1,7 @@
-import { Suspense } from "react";
-import { GuidePage } from "@/components/demo/ReferencePages";
+import { GuidePage } from "@/components/demo/GuidePages";
+
+export const metadata = { title: "Home loan pricing guide | Pricing Tool" };
+
 export default function Page() {
-  return (
-    <Suspense fallback={<p role="status">Opening workspace…</p>}>
-      <GuidePage area="home" />
-    </Suspense>
-  );
+  return <GuidePage area="home" />;
 }

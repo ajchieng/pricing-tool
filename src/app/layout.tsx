@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { TopLoadingBar } from "@/components/TopLoadingBar";
 import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import { DemoProvider } from "@/components/demo/DemoProvider";
 import { DemoShell } from "@/components/demo/DemoShell";
@@ -29,9 +31,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`min-h-full antialiased ${sans.variable} ${serif.variable}`}
+      className={`h-full antialiased ${sans.variable} ${serif.variable}`}
     >
-      <body className="min-h-dvh bg-bg text-ink">
+      <body className="min-h-full">
+        <Suspense fallback={null}>
+          <TopLoadingBar />
+        </Suspense>
         <DemoProvider>
           <DemoShell>{children}</DemoShell>
         </DemoProvider>

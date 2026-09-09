@@ -121,7 +121,11 @@ export function CommercialLoanQuoteForm({
   costOfFundsDefaults?: CommercialCostOfFundsDefaults;
   revisedFromQuoteId?: number;
   saveLabel?: string;
-  header?: { title: string; caption: React.ReactNode };
+  header?: {
+    title: string;
+    caption?: React.ReactNode;
+    actions?: React.ReactNode;
+  };
   canOverrideCapital?: boolean;
   canOverrideExpectedLoss?: boolean;
   quoteFeeSetting?: QuoteFeeSettingConfig;
@@ -909,7 +913,7 @@ export function CommercialLoanQuoteForm({
         backHref="/commercial-loans"
         backLabel="Commercial loan quotes"
         compactMobile
-        actions={<QuoteFormTools />}
+        actions={<QuoteFormTools>{header?.actions}</QuoteFormTools>}
       />
 
       {marketEvidenceError && (

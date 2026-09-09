@@ -111,10 +111,38 @@ export function DemoQuoteEditor({
         Loading the quote workspace…
       </p>
     );
-  const title = `${revisionId ? "Revise" : "New"} ${area} ${area === "commercial" ? "quote" : "loan quote"}`;
-  const caption = revisionId
-    ? "Start a new revision from the saved inputs. The original calculation stays frozen."
-    : "Explore the full calculator or load a fictional sample scenario.";
+  const title = revisionId
+    ? area === "home"
+      ? `Revise Quote #${revisionId}`
+      : `Revise ${area} loan quote #${revisionId}`
+    : `New ${area === "home" ? "Home" : area === "personal" ? "Personal" : "Commercial"} Loan Quote`;
+  const caption = revisionId ? (
+    "Starts from the saved inputs and creates a new linked quote version. The original quote remains unchanged for audit."
+  ) : area === "home" ? (
+    <>
+      Produces a <strong className="text-ink">suggested rate</strong>,
+      indicative repayments, estimated margin and the approval requirement.
+    </>
+  ) : undefined;
+  const sampleAction =
+    revisionId == null ? (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          const handoff = demoMarketHandoff(area, marketId);
+          setLoaded({
+            ...loaded,
+            input: { ...sampleInput(area), ...handoff.values },
+            evidence: handoff.evidence,
+            warning: handoff.warning,
+            version: loaded.version + 1,
+          });
+        }}
+      >
+        Load sample scenario
+      </Button>
+    ) : undefined;
   const common = {
     revisedFromQuoteId: revisionId,
     canOverrideCapital: true,
@@ -122,41 +150,17 @@ export function DemoQuoteEditor({
     applyProfitabilityDefaults: loaded.input == null,
     marketEvidence: loaded.evidence,
     marketEvidenceError: loaded.warning,
-    header: { title, caption },
-    saveLabel: revisionId ? "Save revision" : "Save quote",
+    header: {
+      title,
+      caption,
+      backHref: `/${area}-loans/`,
+      backLabel: `${area === "home" ? "Home" : area === "personal" ? "Personal" : "Commercial"} loan quotes`,
+      actions: sampleAction,
+    },
+    saveLabel: revisionId ? "Save revised quote" : "Save quote",
   };
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3 print:hidden">
-        <Link
-          href={`/${area}-loans/`}
-          className="inline-flex min-h-11 items-center text-sm font-semibold text-brand"
-        >
-          Back to saved quotes
-        </Link>
-        {revisionId == null ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              const handoff = demoMarketHandoff(area, marketId);
-              setLoaded({
-                ...loaded,
-                input: { ...sampleInput(area), ...handoff.values },
-                evidence: handoff.evidence,
-                warning: handoff.warning,
-                version: loaded.version + 1,
-              });
-            }}
-          >
-            Load sample scenario
-          </Button>
-        ) : (
-          <span className="text-sm text-muted">
-            Revising quote #{revisionId}
-          </span>
-        )}
-      </div>
       {area === "home" ? (
         <HomeLoanQuoteForm
           key={`${requestKey}:${loaded.version}`}

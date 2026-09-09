@@ -13,33 +13,45 @@ test("market search filters, compares, and attaches fictional evidence", async (
   await expect(
     page.getByRole("heading", { name: "Market Search", exact: true }),
   ).toBeVisible();
-  await page.getByLabel("Search products", { exact: true }).fill("Riverbank");
+  await page
+    .getByLabel("Search home loans products", { exact: true })
+    .fill("Riverbank");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Compare Everyday Home", exact: true }),
+    page.getByRole("link", {
+      name: "Add Everyday Home to comparison",
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Compare Simple Home", exact: true }),
+    page.getByRole("link", {
+      name: "Add Simple Home to comparison",
+      exact: true,
+    }),
   ).toHaveCount(0);
-  await page.getByLabel("Search products", { exact: true }).fill("");
+  await page.getByRole("link", { name: "Reset", exact: true }).click();
   await page
-    .getByRole("button", { name: "Compare Everyday Home", exact: true })
+    .getByRole("link", { name: "Add Everyday Home to comparison", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Compare Simple Home", exact: true })
+    .getByRole("link", { name: "Add Simple Home to comparison", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Product comparison", exact: true }),
+    page.getByRole("heading", {
+      name: "Selected product comparison",
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     page.getByRole("region", { name: "Selected product comparison" }),
   ).toContainText("Everyday Home");
   await page
-    .getByRole("link", { name: "Use in quote", exact: true })
+    .getByRole("link", { name: /^Use in (?:new )?quote$/ })
     .first()
     .click();
   await expect(page).toHaveURL(/\/home-loans\/new\/\?marketId=/);
   await expect(
-    page.getByRole("heading", { name: "New home loan quote", exact: true }),
+    page.getByRole("heading", { name: "New Home Loan Quote", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("textbox", { name: "Competitor lender", exact: true }),
@@ -56,10 +68,13 @@ test("all guides, quote exports and missing routes work on the static host", asy
   for (const area of ["home", "personal", "commercial"]) {
     await page.goto(`/${area}-loans/guide/`);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "pricing guide",
+      /guide$/i,
     );
     await expect(
-      page.getByRole("heading", { name: "Expected credit loss", exact: true }),
+      page.getByRole("heading", {
+        name: "Active economic policy",
+        exact: true,
+      }),
     ).toBeVisible();
   }
   await page.goto("/home-loans/quote/?id=2");
@@ -115,7 +130,7 @@ test("desktop and mobile visual and accessibility review", async ({
     await page.goto(url);
     if (name === "workspace")
       await expect(
-        page.getByRole("heading", { name: "Lending workspace" }),
+        page.getByRole("heading", { name: "Lending pricing" }),
       ).toBeVisible();
     if (name === "home-calculator") {
       await page

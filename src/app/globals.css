@@ -592,9 +592,7 @@ textarea:focus-visible {
   }
 }
 
-/* Portfolio workspace additions preserve the original paper-and-rail system. */
-.demo-button,
-.demo-button-secondary,
+/* Browser-local reset control and print disclosure. */
 .demo-rail-button {
   display: inline-flex;
   min-height: 44px;
@@ -602,122 +600,12 @@ textarea:focus-visible {
   justify-content: center;
   gap: 8px;
   border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 14px;
-  font-weight: 600;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-}
-.demo-button {
-  background: var(--brand);
-  color: var(--brand-ink);
-}
-.demo-button:hover {
-  background: var(--brand-strong);
-}
-.demo-button-secondary {
-  background: var(--panel);
-  color: var(--ink);
-}
-.demo-button-secondary:hover {
-  background: var(--border);
-}
-.demo-rail-button {
   color: var(--rail-ink);
   background: var(--rail-raised);
-  font-size: 12px;
-  padding: 8px 10px;
-}
-.demo-button:disabled,
-.demo-button-secondary:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-.demo-skip {
-  position: fixed;
-  left: 16px;
-  top: -100px;
-  z-index: 100;
-  background: var(--surface);
-  padding: 12px;
-  border-radius: 8px;
-}
-.demo-skip:focus {
-  top: 12px;
-}
-.demo-field {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  padding: 8px 12px;
-  background: var(--surface);
-  font-size: 14px;
-}
-.demo-field.demo-search-field {
-  padding-inline-start: 36px;
-}
-.demo-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-.demo-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 14px;
-}
-.demo-table th {
-  padding: 12px;
-  font-size: 12px;
-  color: var(--ink-muted);
-  font-weight: 600;
-  background: var(--panel);
-}
-.demo-table td {
-  padding: 14px 12px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-.demo-table a:hover {
-  text-decoration: underline;
-}
-.demo-section-heading {
-  font-family: var(--font-source-serif), serif;
-  font-size: 1.3rem;
-  font-weight: 600;
-}
-.demo-list-row {
-  border-bottom: 1px solid var(--border);
-  padding: 16px 0;
-}
-@media (max-width: 639px) {
-  .demo-table thead {
-    display: none;
-  }
-  .demo-table tbody,
-  .demo-table tr {
-    display: block;
-  }
-  .demo-table tr {
-    border-bottom: 1px solid var(--border);
-    padding: 12px 0;
-  }
-  .demo-table td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    border: 0;
-    padding: 5px 4px;
-  }
-  .demo-table td::before {
-    content: attr(data-label);
-    color: var(--ink-muted);
-    font-size: 12px;
-  }
 }
 @media print {
   .rail-chrome,

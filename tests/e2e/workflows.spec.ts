@@ -69,7 +69,7 @@ async function saveEditor(
 ): Promise<number> {
   const save = page
     .locator("button:visible")
-    .filter({ hasText: revision ? /^Save revision$/ : /^Save quote$/ })
+    .filter({ hasText: revision ? /^Save revised quote$/ : /^Save quote$/ })
     .first();
   await expect(save).toBeEnabled();
   await save.click();
@@ -85,7 +85,7 @@ test("opens the complete fictional workspace anonymously with seeded revisions",
 }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Lending workspace", exact: true }),
+    page.getByRole("heading", { name: "Lending pricing", exact: true }),
   ).toBeVisible();
   expect(await readStore<DemoQuote>(page, "home")).toHaveLength(3);
   expect(await readStore<DemoQuote>(page, "personal")).toHaveLength(2);
@@ -95,13 +95,13 @@ test("opens the complete fictional workspace anonymously with seeded revisions",
   await page.goto(`/home-loans/quote/?id=${current.id}`);
   await page.getByRole("button", { name: "History (2)", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Revision history" }),
+    page.getByRole("heading", { name: "Quote history" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Version 1", exact: true }),
+    page.getByRole("heading", { name: "Version 1", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Version 2 · Current", exact: true }),
+    page.getByRole("heading", { name: "Version 2", exact: true }),
   ).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
@@ -143,7 +143,13 @@ for (const area of ["home", "personal", "commercial"] as const) {
     await page
       .getByRole("button", { name: "History (2)", exact: true })
       .click();
-    await page.getByRole("link", { name: "Version 1", exact: true }).click();
+    await page
+      .getByRole("listitem")
+      .filter({
+        has: page.getByRole("heading", { name: "Version 1", exact: true }),
+      })
+      .getByRole("link", { name: "View this version", exact: true })
+      .click();
     await expect(
       page.getByText(
         "Historical pricing snapshot. Workflow actions are available on the current version.",
@@ -181,6 +187,7 @@ test("records review, assignment, comments, stars and searchable workflow histor
   await expect(
     page.getByRole("button", { name: "Unstar quote", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
+  await page.getByText("Update handoff", { exact: true }).click();
   await page
     .getByRole("combobox", {
       name: "Assign to a fictional colleague",
@@ -229,14 +236,20 @@ test("records review, assignment, comments, stars and searchable workflow histor
   ]);
   await page.goto("/home-loans/");
   await page.getByLabel("Search saved quotes", { exact: true }).fill(name);
-  await page.getByLabel("Starred only", { exact: true }).check();
-  await expect(page.locator("tbody tr")).toHaveCount(1);
-  await expect(page.locator("tbody tr")).toContainText("Reviewed");
+  await page.getByRole("button", { name: "Starred only", exact: true }).click();
+  const record = page
+    .locator("tbody tr:visible, main li:visible")
+    .filter({ has: page.getByRole("link", { name, exact: true }) });
+  await expect(record).toHaveCount(1);
+  await expect(record).toContainText("Reviewed");
   await page
     .getByLabel("Search saved quotes", { exact: true })
     .fill("not-present-example");
   await expect(
-    page.getByRole("heading", { name: "No matching quotes", exact: true }),
+    page.getByRole("heading", {
+      name: "No quotes match these filters",
+      exact: true,
+    }),
   ).toBeVisible();
 });
 
@@ -277,7 +290,7 @@ test("isolates browser contexts and resets only this demo's local workspace", as
     .getByRole("button", { name: "Reset workspace", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Lending workspace", exact: true }),
+    page.getByRole("heading", { name: "Lending pricing", exact: true }),
   ).toBeVisible();
   expect(await readStore<DemoQuote>(page, "personal")).toHaveLength(2);
   expect(
@@ -318,7 +331,7 @@ test("recovers corrupt demo metadata through its visible reset control", async (
 }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Lending workspace", exact: true }),
+    page.getByRole("heading", { name: "Lending pricing", exact: true }),
   ).toBeVisible();
   await page.evaluate(async (databaseName) => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -349,7 +362,7 @@ test("recovers corrupt demo metadata through its visible reset control", async (
     .getByRole("button", { name: "Reset demo storage", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Lending workspace", exact: true }),
+    page.getByRole("heading", { name: "Lending pricing", exact: true }),
   ).toBeVisible();
   expect(await readStore<DemoQuote>(page, "home")).toHaveLength(3);
   expect(await readStore<DemoQuote>(page, "personal")).toHaveLength(2);

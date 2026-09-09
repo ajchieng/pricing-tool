@@ -71,14 +71,14 @@ components:
     backgroundColor: "{colors.brand}"
     textColor: "{colors.brand-ink}"
     rounded: "{rounded.control}"
-    padding: "8px 14px"
+    padding: "8px 16px"
   button-primary-hover:
     backgroundColor: "{colors.brand-strong}"
   button-secondary:
-    backgroundColor: "{colors.panel}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.control}"
-    padding: "8px 14px"
+    padding: "8px 16px"
   input:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -114,7 +114,7 @@ components:
 
 A calm, precise operating workspace: near-white paper, hairline divisions and readable figures beside a near-black evergreen rail. Source Sans 3 carries controls and explanations; Source Serif 4 supplies headings and the tabular numbers that give results their printed-ledger character.
 
-This records the implemented interface, preserving its existing visual identity. Dense forms and saved records remain legible through grouped sections, space, disclosure controls and a prominent dark decision panel.
+The original product interface is the source of truth. This demo copies its components, layout, navigation, typography and interaction patterns; changes are limited to neutral branding, fictional policy and browser-local operations. Dense forms and saved records remain legible through grouped sections, space, disclosure controls and a prominent dark decision panel.
 
 **Key Characteristics:**
 
@@ -146,15 +146,15 @@ The palette combines cool paper neutrals with muted product colors and brighter 
 **Display Font:** Source Serif 4 with Georgia and Times New Roman fallbacks.  
 **Body Font:** Source Sans 3 with UI sans-serif and system fallbacks.
 
-The root size is 15px. Page headings generally use the headline role; the overview grows to 2.25rem on wider screens. Section headings use the title role. Supporting prose and controls use compact sans-serif text; workspace labels use the label role. The display role belongs to the rate in the dark decision band.
+The root size is 15px. Page headings generally use the headline role; the overview grows to 2.4rem on wider screens. Section headings use the title role. Supporting prose and controls use compact sans-serif text; workspace labels use the label role. The display role belongs to the rate in the dark decision band.
 
 **The Aligned Figures Rule.** Use Source Serif 4 with `font-variant-numeric: tabular-nums` for rates, money and comparative numeric columns.
 
 ## Layout
 
-The desktop shell has a sticky 248px rail and a flexible content area capped at 1680px. At the large breakpoint, the mobile top bar becomes the rail; mobile navigation opens a modal drawer up to 320px wide or 90vw. Main content padding progresses from 1rem to 1.5rem and 2rem.
+The desktop shell has a sticky 248px rail and a flexible content area capped at 1600px. At the large breakpoint, the mobile top bar becomes the rail; mobile navigation opens a modal drawer up to 290px wide or 85vw. Main content padding progresses from 1rem to 1.5rem and 2rem.
 
-The overview becomes three product columns at the extra-large breakpoint. Forms use grouped sections and a separate result region. Saved decision panels stack their sections on narrow screens and form three columns on desktop. Saved-quote tables become labelled row blocks below 640px. Print output removes navigation and actions, retaining content and its explanatory title.
+The overview becomes three product columns at the large breakpoint. Forms use grouped sections and a separate result region. Saved decision panels stack their sections on narrow screens and form three columns on desktop. Saved-quote tables use the original compact cards with product-specific metrics on mobile. Print output removes navigation and actions, retaining content and its explanatory title.
 
 ## Elevation & Depth
 
@@ -168,15 +168,19 @@ Workspace controls use the control radius; preserved form controls use the close
 
 ## Components
 
-**Buttons.** Solid product-color primary actions and pale secondary workspace actions share 44px minimum height. Hover darkens the primary or strengthens the secondary fill. Preserved form buttons also provide bordered secondary, ghost and destructive variants, with short color transitions and a one-pixel press movement.
+**Buttons.** All screens use the original shared button system: solid product-color primary, bordered secondary, ghost and destructive variants. Controls have a 44px minimum height, medium weight, short color transitions and a one-pixel press movement.
 
 **Fields.** White inputs have a stronger one-pixel boundary, generous control padding and a visible two-pixel focus outline. Workspace labels sit above the field. Disabled controls retain their shape and reduce opacity.
 
-**Navigation.** Muted light text and outlined SVG icons sit on evergreen chrome. The active row uses a lighter evergreen fill and light text. Mobile navigation preserves the same hierarchy with a focus-trapped drawer and an explicit close control.
+**Navigation.** Muted light text and outlined SVG icons sit on evergreen chrome. The active row uses a lighter evergreen fill and light text. Lending and Reference groups preserve the original hierarchy. Each product has a compact identity header and segmented Quotes, New quote and Guide tabs. Mobile navigation preserves the hierarchy with a focus-trapped drawer and an explicit close control.
 
 **Status badges.** Text carries the status meaning; a dot, matching foreground and soft background reinforce it. Semantic colors remain independent of the product accent.
 
 **Product cards.** Soft product-color surfaces group a product heading, saved-record list and actions. Hairlines separate records; serif rates form the right-hand comparison column.
+
+**Guides.** Score and profitability are separate linked views. Preserve the original section order, category charts, factor tables, score curves, worked examples, waterfalls and formulas. All numerical examples must use the fictional policy and agree with the browser calculations.
+
+**Market Search.** Preserve the original search field, refinements, editorial result rows, sticky product details, comparison table and mobile comparison dock. The catalogue is a fixed fictional fixture.
 
 **Decision band.** A deep product-color surface holds the large rate, approval explanation and repayments. Light text, luminous figures and subtle internal dividers maintain hierarchy. Reasons disclose in place.
 

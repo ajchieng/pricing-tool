@@ -8,7 +8,7 @@ The complete browser orchestration runs the base pricing engine, assesses model 
 
 Expected credit loss is deducted once from canonical profit. Incomplete model risk remains incomplete even if a reasoned, explicitly labelled demo override supplies an amount for the operational review. Capital classification and required classification confirmations are preserved. Display-only comparison rates and product-fee context never silently become pricing inputs.
 
-All fictional policy is versioned. The snapshot includes the selected product and rate role, score model, policy components and their canonical hashes. The three guides read those same demonstration policy definitions.
+All fictional policy is versioned. The snapshot includes the selected product and rate role, score model, policy components and their canonical hashes. Each area’s score and profitability guides read those same demonstration policy definitions.
 
 ## Browser storage
 

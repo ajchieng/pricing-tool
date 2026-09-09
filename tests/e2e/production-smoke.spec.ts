@@ -33,7 +33,7 @@ async function readLocalRecords<T>(
 async function saveQuoteEditor(page: Page, revision = false): Promise<number> {
   const button = page
     .locator("button:visible")
-    .filter({ hasText: revision ? /^Save revision$/ : /^Save quote$/ })
+    .filter({ hasText: revision ? /^Save revised quote$/ : /^Save quote$/ })
     .first();
   await expect(button).toBeEnabled();
   await button.click();
@@ -62,7 +62,7 @@ test("public demo calculates, saves, revises and reviews without sign-in or back
     // Next.js probes exported document routes with HEAD before prefetching.
     const isStaticDocumentProbe =
       request.method() === "HEAD" &&
-      /^\/(?:(?:home|personal|commercial)-loans\/(?:(?:new|quote|revise|guide)\/)?|(?:market-search|about)\/)?$/.test(
+      /^\/(?:(?:home|personal|commercial)-loans\/(?:(?:new|quote|revise|guide(?:\/profitability)?)\/)?|(?:market-search|about)\/)?$/.test(
         url.pathname,
       );
     const isStaticNextPayload =
@@ -145,7 +145,13 @@ test("public demo calculates, saves, revises and reviews without sign-in or back
   ]);
 
   await page.getByRole("button", { name: "History (2)", exact: true }).click();
-  await page.getByRole("link", { name: "Version 1", exact: true }).click();
+  await page
+    .getByRole("listitem")
+    .filter({
+      has: page.getByRole("heading", { name: "Version 1", exact: true }),
+    })
+    .getByRole("link", { name: "View this version", exact: true })
+    .click();
   await expect(page).toHaveURL(
     `${expectedOrigin}/home-loans/quote/?id=${originalId}`,
   );

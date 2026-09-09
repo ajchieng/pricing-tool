@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   getHistory: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/home-loans/quote/",
   useSearchParams: () => new URLSearchParams(`id=${mocks.rawId}`),
 }));
 vi.mock("next/link", () => ({

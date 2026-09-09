@@ -1,4 +1,5 @@
 "use client";
+import { buttonClass } from "@/components/ui/Button";
 export default function ErrorPage({
   reset,
 }: {
@@ -12,7 +13,7 @@ export default function ErrorPage({
         Retry the page. If the saved browser data is incompatible, use Reset
         demo in the navigation to restore the fictional examples.
       </p>
-      <button className="demo-button mt-5" onClick={reset}>
+      <button className={buttonClass("primary", "md", "mt-5")} onClick={reset}>
         Retry page
       </button>
     </section>

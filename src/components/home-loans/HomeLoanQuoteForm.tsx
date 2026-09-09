@@ -161,6 +161,7 @@ export function HomeLoanQuoteForm({
     caption?: React.ReactNode;
     backHref?: string;
     backLabel?: string;
+    actions?: React.ReactNode;
   };
   canOverrideCapital?: boolean;
   canOverrideExpectedLoss?: boolean;
@@ -725,7 +726,7 @@ export function HomeLoanQuoteForm({
       profitDefaultFlags.expenses ? "" : form.expenses,
     ].some((v) => v.trim() !== "");
 
-  const quoteFormTools = <QuoteFormTools />;
+  const quoteFormTools = <QuoteFormTools>{header?.actions}</QuoteFormTools>;
 
   const showMobileBar = result != null && !actionsInView;
   const scenarioCanApply =

@@ -114,7 +114,11 @@ export function PersonalLoanQuoteForm({
   initialValues?: Partial<FormState>;
   revisedFromQuoteId?: number;
   saveLabel?: string;
-  header?: { title: string; caption: React.ReactNode };
+  header?: {
+    title: string;
+    caption?: React.ReactNode;
+    actions?: React.ReactNode;
+  };
   canOverrideCapital?: boolean;
   canOverrideExpectedLoss?: boolean;
   quoteFeeSetting?: QuoteFeeSettingConfig;
@@ -817,7 +821,7 @@ export function PersonalLoanQuoteForm({
         backHref="/personal-loans"
         backLabel="Personal loan quotes"
         compactMobile
-        actions={<QuoteFormTools />}
+        actions={<QuoteFormTools>{header?.actions}</QuoteFormTools>}
       />
 
       {marketEvidenceError && (

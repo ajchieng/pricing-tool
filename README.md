@@ -11,6 +11,7 @@ A lending-pricing portfolio project by Alexander Chieng. Explore three distinct 
 - **Home:** owner-occupied and investment scenarios, customer scoring, requested-rate previews, repayments, expected loss, capital and profitability.
 - **Personal:** secured and unsecured lending, affordability and customer scoring, repayments and risk-adjusted financial results.
 - **Commercial:** term loans, overdrafts, equipment and property facilities, debt-service coverage, security, capital and profitability.
+- **Guides:** separate score and profitability views, category charts, factor rules, worked examples and printable explanations using the fictional policy.
 - **Quote workflow:** save, revise, star, assign to a fictional colleague, comment, record reviews, inspect frozen versions, print, and download JSON.
 - **Market Search:** compare a fictional catalogue and attach a selected advertised rate as evidence. Comparison rates and fees are display context rather than pricing-policy inputs.
 

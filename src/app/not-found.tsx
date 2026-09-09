@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonClass } from "@/components/ui/Button";
 export default function NotFound() {
   return (
     <section className="py-16">
@@ -6,7 +7,7 @@ export default function NotFound() {
       <p className="mt-3 text-muted">
         Return to the workspace to explore a lending area.
       </p>
-      <Link className="demo-button mt-6 inline-flex" href="/">
+      <Link className={buttonClass("primary", "md", "mt-6")} href="/">
         Open workspace
       </Link>
     </section>

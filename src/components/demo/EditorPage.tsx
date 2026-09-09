@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { DemoQuoteEditor } from "@/components/DemoQuoteEditor";
 import type { DemoArea } from "@/lib/demo/types";
 import { AREA_INFO } from "@/lib/demo/presentation";
+import { buttonClass } from "@/components/ui/Button";
 import { ProductTabs } from "./WorkspacePages";
 import { useDemo, WorkspaceLoading } from "./DemoProvider";
 
@@ -34,7 +35,10 @@ export function EditorPage({
         <p className="mt-3 text-sm text-muted">
           Open a saved quote in this browser and choose Revise quote.
         </p>
-        <Link className="demo-button mt-5" href={`${AREA_INFO[area].path}/`}>
+        <Link
+          className={buttonClass("primary", "md", "mt-5")}
+          href={`${AREA_INFO[area].path}/`}
+        >
           View saved quotes
         </Link>
       </section>
