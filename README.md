@@ -1,5 +1,7 @@
 # Pricing Tool
 
+[Open the live demo](https://pricing-tool-lyart.vercel.app/) · [View source](https://github.com/ajchieng/pricing-tool)
+
 A lending-pricing portfolio project by Alexander Chieng. Explore three distinct calculation engines, inspect the financial reasoning, and work through a saved quote’s review and revision history.
 
 **All products, customers, rates, score calibrations, and policy assumptions are fictional.** The application is a demonstration, not an offer, recommendation, or credit decision. Enter fictional information only.
@@ -60,7 +62,7 @@ The browser harness builds and serves the static export in isolated browser cont
 To verify a deployed public site, explicitly set its HTTPS origin:
 
 ```bash
-DEMO_TEST_BASE_URL=https://your-public-demo.example npm run test:e2e -- tests/e2e/production-smoke.spec.ts
+DEMO_TEST_BASE_URL=https://pricing-tool-lyart.vercel.app npm run test:e2e -- tests/e2e/production-smoke.spec.ts
 ```
 
 This opt-in mode skips the local build and static server. Use the stable public domain without a path, credentials, query or fragment. Each desktop and mobile test starts with empty browser storage and no saved sign-in session. The production smoke test calculates, saves, revises and reviews a fictional Home quote, checks that version 1 remains unchanged, and fails on API calls, writes or external network requests. All quote and review changes occur only in the test browser. Without `DEMO_TEST_BASE_URL`, the harness continues to build and test the local static export.
