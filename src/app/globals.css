@@ -1,0 +1,746 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Lender Lending Platform — design tokens
+   Register: product. Identity: "ruled ledger" — one paper-white sheet
+   structured by hairline rules and space (tint is reserved for table header
+   bands, data-viz strips and the few committed surfaces), every figure set
+   in Source Serif tabular numerals (.tnum), and a near-black evergreen rail.
+   Each lending vertical re-points the brand tokens ([data-product]) so the
+   whole section carries its hue: home = Lender evergreen, personal = iris
+   violet, commercial = azure. Colours in OKLCH. Status colours are AA on
+   their soft backgrounds and always paired with a label/icon so meaning
+   never relies on hue alone.
+--------------------------------------------------------------------------- */
+
+:root {
+  /* Paper workspace — one continuous near-white surface, cool, never cream */
+  --bg: oklch(0.985 0.003 190);
+  --surface: oklch(1 0 0);
+  --panel: oklch(0.958 0.008 185);
+  --border: oklch(0.9 0.01 185);
+  /* Control boundaries: ≥3:1 against --surface, --bg and --panel. */
+  --border-strong: oklch(0.62 0.018 185);
+  --ink: oklch(0.215 0.022 185);
+  --ink-muted: oklch(0.46 0.022 185);
+  /* AA on white and panel (≥4.5:1) — do not lighten above L 0.53 */
+  --ink-faint: oklch(0.53 0.02 185);
+
+  /* Rail — near-black evergreen chrome for the sidebar / mobile top bar */
+  --rail: oklch(0.19 0.03 175);
+  --rail-raised: oklch(0.24 0.036 175);
+  --rail-active: oklch(0.3 0.048 172);
+  --rail-border: oklch(0.275 0.034 175);
+  --rail-ink: oklch(0.968 0.007 170);
+  --rail-muted: oklch(0.73 0.03 172);
+  --rail-accent: oklch(0.85 0.146 164);
+  --rail-accent-personal: oklch(0.81 0.09 298);
+  --rail-accent-commercial: oklch(0.81 0.08 240);
+  --overlay-scrim: oklch(0.18 0.02 240 / 0.5);
+
+  /* Lender brand evergreen (home loans + app default) */
+  --brand: oklch(0.44 0.095 168);
+  --brand-strong: oklch(0.37 0.085 168);
+  --brand-ink: oklch(0.99 0.01 168);
+  --brand-soft: oklch(0.945 0.038 168);
+  /* Whisper-light wash for identity zones (page headers, hub panels) */
+  --brand-tint: oklch(0.975 0.014 168);
+  /* Dark decision surface + the luminous figure colour that sits on it */
+  --brand-deep: oklch(0.235 0.045 172);
+  --brand-deep-muted: oklch(0.74 0.035 170);
+  --brand-glow: oklch(0.87 0.13 164);
+
+  /* Status — fg is AA on the matching -soft bg */
+  --ok: oklch(0.45 0.11 152);
+  --ok-soft: oklch(0.955 0.038 152);
+  --warn: oklch(0.46 0.092 75);
+  --warn-soft: oklch(0.955 0.055 78);
+  --high: oklch(0.5 0.13 52);
+  --high-soft: oklch(0.95 0.055 58);
+  --alert: oklch(0.5 0.17 25);
+  --alert-soft: oklch(0.952 0.04 25);
+  --info: oklch(0.48 0.11 248);
+  --info-soft: oklch(0.955 0.03 248);
+  --teal: oklch(0.43 0.09 190);
+  --teal-soft: oklch(0.955 0.035 190);
+  /* Light warning text for dark decision surfaces (AA on --brand-deep) */
+  --warn-bright: oklch(0.87 0.11 85);
+
+  --ring: oklch(0.55 0.09 168);
+
+  /* Elevation — reserved: md for the Suggested Rate hero and floating
+     menus, lg for the mobile drawer. Resting surfaces carry no shadow. */
+  --shadow-xs: 0 1px 2px oklch(0.25 0.02 190 / 0.05);
+  --shadow-sm:
+    0 1px 2px oklch(0.25 0.02 190 / 0.06),
+    0 2px 6px -2px oklch(0.25 0.02 190 / 0.06);
+  --shadow-md:
+    0 2px 4px oklch(0.25 0.03 190 / 0.05),
+    0 12px 32px -12px oklch(0.25 0.05 190 / 0.22);
+  --shadow-lg:
+    0 4px 8px oklch(0.2 0.03 190 / 0.08),
+    0 24px 56px -16px oklch(0.2 0.05 190 / 0.3);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-panel: var(--panel);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-faint: var(--ink-faint);
+
+  --color-rail: var(--rail);
+  --color-rail-raised: var(--rail-raised);
+  --color-rail-active: var(--rail-active);
+  --color-rail-border: var(--rail-border);
+  --color-rail-ink: var(--rail-ink);
+  --color-rail-muted: var(--rail-muted);
+  --color-rail-accent: var(--rail-accent);
+  --color-rail-accent-personal: var(--rail-accent-personal);
+  --color-rail-accent-commercial: var(--rail-accent-commercial);
+  --color-overlay-scrim: var(--overlay-scrim);
+
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-tint: var(--brand-tint);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-deep-muted: var(--brand-deep-muted);
+  --color-brand-glow: var(--brand-glow);
+
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-high: var(--high);
+  --color-high-soft: var(--high-soft);
+  --color-alert: var(--alert);
+  --color-alert-soft: var(--alert-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+  --color-warn-bright: var(--warn-bright);
+
+  --font-sans:
+    var(--font-source-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: var(--font-source-serif), Georgia, "Times New Roman", serif;
+}
+
+/* ---------------------------------------------------------------------------
+   Product area accents. Each lending vertical wraps its pages in a
+   [data-product] container (see ProductAreaShell) that re-points the brand
+   tokens, so every brand-tinted control inside a section carries that
+   product's identity: home = Lender evergreen (default), personal = iris
+   violet, commercial = azure. Status colours stay global.
+--------------------------------------------------------------------------- */
+
+[data-product="personal"] {
+  --brand: oklch(0.46 0.145 295);
+  --brand-strong: oklch(0.39 0.13 295);
+  --brand-ink: oklch(0.99 0.008 295);
+  --brand-soft: oklch(0.945 0.042 295);
+  --brand-tint: oklch(0.975 0.016 295);
+  --brand-deep: oklch(0.25 0.072 296);
+  --brand-deep-muted: oklch(0.76 0.05 298);
+  --brand-glow: oklch(0.85 0.1 300);
+  --ring: oklch(0.55 0.12 295);
+}
+
+[data-product="commercial"] {
+  --brand: oklch(0.45 0.11 240);
+  --brand-strong: oklch(0.38 0.1 240);
+  --brand-ink: oklch(0.99 0.008 240);
+  --brand-soft: oklch(0.945 0.035 240);
+  --brand-tint: oklch(0.975 0.014 240);
+  --brand-deep: oklch(0.25 0.058 243);
+  --brand-deep-muted: oklch(0.76 0.045 240);
+  --brand-glow: oklch(0.85 0.095 235);
+  --ring: oklch(0.55 0.1 240);
+}
+
+[data-product="personal"] input[type="checkbox"],
+[data-product="personal"] input[type="radio"],
+[data-product="personal"] input[type="range"],
+[data-product="commercial"] input[type="checkbox"],
+[data-product="commercial"] input[type="radio"],
+[data-product="commercial"] input[type="range"] {
+  accent-color: var(--brand);
+}
+
+html {
+  font-size: 15px;
+  color-scheme: light;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* Native controls pick up the brand accent instead of UA blue */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+progress {
+  accent-color: var(--brand);
+}
+
+/* Follows the product accent inside [data-product] scopes */
+::selection {
+  background: var(--brand-soft);
+  color: var(--ink);
+}
+
+/* Reference the next/font variables directly: `@theme inline` inlines theme
+   values into utilities but does not emit --font-sans / --font-serif as
+   runtime custom properties. */
+body {
+  background: var(--bg);
+  color: var(--ink);
+  max-width: 100%;
+  overflow-x: clip;
+  font-family:
+    var(--font-source-sans),
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body[data-high-contrast="true"] {
+  --panel: oklch(0.94 0.012 185);
+  --border: oklch(0.74 0.02 185);
+  --border-strong: oklch(0.6 0.026 185);
+  --ink-muted: oklch(0.32 0.025 185);
+  --ink-faint: oklch(0.39 0.024 185);
+  --brand-soft: oklch(0.91 0.055 168);
+  --ok-soft: oklch(0.925 0.055 152);
+  --warn-soft: oklch(0.925 0.075 78);
+  --high-soft: oklch(0.92 0.075 58);
+  --alert-soft: oklch(0.925 0.055 25);
+  --info-soft: oklch(0.925 0.045 248);
+  --teal-soft: oklch(0.925 0.05 190);
+}
+
+body[data-high-contrast="true"] [data-product="personal"] {
+  --brand-soft: oklch(0.9 0.07 295);
+}
+
+body[data-high-contrast="true"] [data-product="commercial"] {
+  --brand-soft: oklch(0.9 0.06 240);
+}
+
+body[data-numeric-display="large"] {
+  --numeric-scale: 1.12;
+}
+
+.simple-only {
+  display: none !important;
+}
+
+body[data-simple-mode="true"] .simple-optional {
+  display: none !important;
+}
+
+body[data-simple-mode="true"] .simple-only {
+  display: block !important;
+}
+
+body[data-density="comfortable"] table th,
+body[data-density="comfortable"] table td {
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+}
+
+body[data-density="comfortable"] details > summary {
+  padding-top: 1.15rem;
+  padding-bottom: 1.15rem;
+}
+
+body[data-density="comfortable"] .density-row {
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+}
+
+/* Even line breaks on short headings */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+/* Every figure in the app — rates, money, LVR, counts, ids — is set in
+   Source Serif with tabular numerals: the printed-ledger signature of the
+   identity, and (verified) the columns always align. Source Sans 3's digits
+   are proportional, so never render figures in the UI sans. */
+.tnum {
+  font-family: var(--font-source-serif), Georgia, "Times New Roman", serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Market Search owns a dense ledger and a named A4 comparison print surface.
+   These selectors stay route-prefixed so quote, guide and admin rendering is
+   unchanged. */
+.market-search-field::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.market-result-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.market-print-only {
+  display: none;
+}
+
+/* Consistent, visible keyboard focus across the whole app */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-offset: 0;
+}
+
+/* Admin configuration search results deep-link to editable ledger rows.
+   The short tint confirms the destination without competing with keyboard
+   focus; reduced-motion below neutralises the transition. */
+[data-admin-search-target] {
+  scroll-margin-block: 1.5rem;
+  transition:
+    background-color 220ms cubic-bezier(0.25, 1, 0.5, 1),
+    outline-color 220ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+[data-admin-search-target][data-search-highlight="true"] {
+  background: var(--brand-tint);
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+/* Quote parameter results focus the authoritative field or saved figure. */
+[data-quote-parameter-label] {
+  scroll-margin-block: 7rem;
+  transition:
+    background-color 180ms cubic-bezier(0.25, 1, 0.5, 1),
+    outline-color 180ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+[data-quote-parameter-label][data-search-highlight="true"] {
+  background: var(--brand-tint);
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+[data-quote-parameter-group="Decision"]
+  [data-quote-parameter-label][data-search-highlight="true"] {
+  background: transparent;
+  outline-color: var(--brand-glow);
+}
+
+.confirm-dialog::backdrop {
+  background: var(--overlay-scrim);
+}
+
+.quote-history-dialog::backdrop {
+  background: var(--overlay-scrim);
+}
+
+.quote-parameter-dialog::backdrop {
+  background: var(--overlay-scrim);
+}
+
+.quote-parameter-dialog {
+  width: 100dvw;
+  max-width: 100dvw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+}
+
+@media (min-width: 40rem) {
+  .quote-parameter-dialog {
+    width: min(92vw, 42rem);
+    max-width: 42rem;
+    height: fit-content;
+    max-height: min(80dvh, 42rem);
+    margin: auto;
+  }
+}
+
+.quote-parameter-dialog[open] {
+  animation: quote-parameter-in 150ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes quote-parameter-in {
+  from {
+    transform: translateY(0.5rem) scale(0.985);
+    opacity: 0.72;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.quote-history-dialog[open] {
+  animation: quote-history-in 180ms ease-out;
+}
+
+@keyframes quote-history-in {
+  from {
+    transform: translateX(1.5rem);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quote-history-dialog[open] {
+    animation: none;
+  }
+
+  .quote-parameter-dialog[open] {
+    animation: none;
+  }
+}
+
+/* Focus on dark chrome (rail, decision surfaces) needs a light ring */
+.rail-chrome :focus-visible {
+  outline-color: var(--rail-accent);
+}
+
+/* Quiet scrollbar for the dark rail nav. The default OS scrollbar renders as a
+   harsh light chunk against the pine chrome; this makes it thin, tinted to the
+   rail, and only faintly present until hovered. */
+.rail-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rail-border) transparent;
+}
+.rail-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.rail-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rail-scroll::-webkit-scrollbar-thumb {
+  /* Padding-box border + clip makes the visible thumb ~4px and pill-shaped. */
+  background-color: var(--rail-border);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+.rail-scroll:hover::-webkit-scrollbar-thumb {
+  background-color: var(--rail-active);
+}
+.rail-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--rail-accent);
+}
+
+.top-loading-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  height: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+}
+
+.top-loading-bar--visible {
+  opacity: 1;
+}
+
+.top-loading-bar__fill {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: var(--rail-accent);
+  transition: transform 180ms ease-out;
+}
+
+/* Mobile nav drawer slide-in; reduced-motion rule below neutralises it */
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.nav-drawer {
+  animation: drawer-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto !important;
+  }
+
+  .nav-drawer,
+  .quote-history-dialog[open],
+  .quote-parameter-dialog[open],
+  .animate-spin,
+  .animate-pulse {
+    animation: none !important;
+  }
+
+  .top-loading-bar,
+  .top-loading-bar__fill,
+  [class~="transition-transform"] {
+    transition-duration: 0ms !important;
+  }
+
+  .top-loading-bar__fill {
+    box-shadow: none;
+  }
+}
+
+@page market-comparison {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  #market-comparison {
+    page: market-comparison;
+    margin: 0 !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+  }
+
+  body:has(#market-comparison) {
+    background: white !important;
+    color: black !important;
+    font-size: 11px;
+  }
+
+  body:has(#market-comparison) > .flex > aside,
+  body:has(#market-comparison) > .flex > div > header,
+  body:has(#market-comparison) > .flex > div > footer {
+    display: none !important;
+  }
+
+  body:has(#market-comparison) main {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .market-print-hide {
+    display: none !important;
+  }
+
+  .market-print-only {
+    display: block !important;
+  }
+
+  #market-comparison > header {
+    background: white !important;
+    color: black !important;
+    border-bottom: 2px solid currentColor;
+  }
+
+  #market-comparison > header p {
+    color: currentColor !important;
+  }
+
+  .market-comparison-desktop {
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .market-comparison-mobile,
+  .market-comparison-dock {
+    display: none !important;
+  }
+
+  .market-comparison-table {
+    table-layout: fixed;
+  }
+
+  .market-comparison-table tr,
+  .market-comparison-table td,
+  .market-comparison-table th {
+    break-inside: avoid;
+  }
+
+  #market-comparison a {
+    color: black !important;
+    text-decoration: underline;
+  }
+}
+
+/* Portfolio workspace additions preserve the original paper-and-rail system. */
+.demo-button,
+.demo-button-secondary,
+.demo-rail-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.demo-button {
+  background: var(--brand);
+  color: var(--brand-ink);
+}
+.demo-button:hover {
+  background: var(--brand-strong);
+}
+.demo-button-secondary {
+  background: var(--panel);
+  color: var(--ink);
+}
+.demo-button-secondary:hover {
+  background: var(--border);
+}
+.demo-rail-button {
+  color: var(--rail-ink);
+  background: var(--rail-raised);
+  font-size: 12px;
+  padding: 8px 10px;
+}
+.demo-button:disabled,
+.demo-button-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.demo-skip {
+  position: fixed;
+  left: 16px;
+  top: -100px;
+  z-index: 100;
+  background: var(--surface);
+  padding: 12px;
+  border-radius: 8px;
+}
+.demo-skip:focus {
+  top: 12px;
+}
+.demo-field {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: var(--surface);
+  font-size: 14px;
+}
+.demo-field.demo-search-field {
+  padding-inline-start: 36px;
+}
+.demo-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+.demo-table th {
+  padding: 12px;
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-weight: 600;
+  background: var(--panel);
+}
+.demo-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.demo-table a:hover {
+  text-decoration: underline;
+}
+.demo-section-heading {
+  font-family: var(--font-source-serif), serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.demo-list-row {
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+}
+@media (max-width: 639px) {
+  .demo-table thead {
+    display: none;
+  }
+  .demo-table tbody,
+  .demo-table tr {
+    display: block;
+  }
+  .demo-table tr {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+  }
+  .demo-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border: 0;
+    padding: 5px 4px;
+  }
+  .demo-table td::before {
+    content: attr(data-label);
+    color: var(--ink-muted);
+    font-size: 12px;
+  }
+}
+@media print {
+  .rail-chrome,
+  .demo-notice,
+  .demo-no-print,
+  .demo-skip {
+    display: none !important;
+  }
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  details {
+    break-inside: avoid;
+  }
+  button {
+    display: none !important;
+  }
+  .demo-print-title {
+    display: block !important;
+  }
+}
