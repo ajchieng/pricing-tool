@@ -73,7 +73,7 @@ If browser storage is unavailable, the application explains the failure rather t
 
 ## Deployment
 
-Import this repository into a new personal Vercel project. Use `npm run build`, the `out` output directory, and the production branch `main`. The repository’s Vercel configuration supplies static routing and response headers. No integrations or environment variables are required.
+Import this repository into a new personal Vercel project. Use the **Other** application preset, `npm run build`, the `out` output directory, and the production branch `main`. The checked-in `framework: null` selects that static preset; Next.js is used to generate the site at build time. The repository’s Vercel configuration supplies static routing and response headers. No integrations or environment variables are required.
 
 Share the stable production domain, which must be accessible without signing in. Preview deployments may retain Vercel’s own protection. The local static build is portable to other static hosts.
 
