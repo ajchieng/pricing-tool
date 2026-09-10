@@ -14,6 +14,10 @@ const mocks = vi.hoisted(() => ({
   listeners: new Set<() => void>(),
   listQuotes: vi.fn(),
   getCore: vi.fn(),
+  getQuote: vi.fn(),
+  getHistory: vi.fn(),
+  showHandoff: true,
+  displayListeners: new Set<() => void>(),
 }));
 vi.mock("next/navigation", async () => {
   const { useSyncExternalStore } = await import("react");
@@ -46,13 +50,30 @@ vi.mock("@/lib/demo/store", () => ({
   ...mocks,
   addComment: vi.fn(),
   assignQuote: vi.fn(),
-  getQuote: vi.fn(),
-  getHistory: vi.fn(),
   reviewQuote: vi.fn(),
   setStarred: vi.fn(),
   updateWorkflow: vi.fn(),
 }));
-import { QuotesPage } from "./QuotePages";
+vi.mock("@/lib/demo/configuration-display", async () => {
+  const { useSyncExternalStore } = await import("react");
+  return {
+    useDemoDisplaySettings: () => ({
+      showQuoteHandoffStatus: useSyncExternalStore(
+        (listener) => {
+          mocks.displayListeners.add(listener);
+          return () => {
+            mocks.displayListeners.delete(listener);
+          };
+        },
+        () => mocks.showHandoff,
+      ),
+    }),
+  };
+});
+vi.mock("@/components/DemoSavedResult", () => ({
+  DemoSavedResult: () => <p>Saved pricing decision remains visible.</p>,
+}));
+import { QuotesPage, QuoteDetailPage } from "./QuotePages";
 
 const savedQuote: DemoQuote = {
   id: 1,
@@ -87,6 +108,8 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.clearAllMocks();
   mocks.listeners.clear();
+  mocks.displayListeners.clear();
+  mocks.showHandoff = true;
 });
 
 it("preserves search and starred filters across consecutive native-history updates", async () => {
@@ -139,4 +162,72 @@ it("preserves search and starred filters across consecutive native-history updat
   expect(
     screen.queryAllByRole("link", { name: "Workflow Example" }),
   ).toHaveLength(0);
+});
+
+it("hides handoff queues, filters and assignment columns immediately and ignores hidden URL filters", async () => {
+  mocks.query = "?workflow=needs_risk_info";
+  mocks.listQuotes.mockResolvedValue([savedQuote]);
+  mocks.getCore.mockResolvedValue(savedCore);
+  render(<QuotesPage area="home" />);
+  await screen.findByRole("heading", { name: "No quotes match these filters" });
+  expect(
+    screen.getByRole("combobox", { name: "Filter by handoff status" }),
+  ).toBeTruthy();
+  await act(async () => {
+    mocks.showHandoff = false;
+    for (const listener of mocks.displayListeners) listener();
+  });
+  expect(
+    await screen.findAllByRole("link", { name: "Workflow Example" }),
+  ).toHaveLength(2);
+  expect(
+    screen.queryByRole("combobox", { name: "Filter by handoff status" }),
+  ).toBeNull();
+  expect(screen.queryByRole("columnheader", { name: "Handoff" })).toBeNull();
+  expect(screen.queryByRole("columnheader", { name: "Assigned" })).toBeNull();
+  expect(screen.queryByText("Ready for review")).toBeNull();
+  expect(screen.queryByText("Needs credit risk")).toBeNull();
+  expect(
+    screen.getByRole("link", { name: "Bulk import" }).getAttribute("href"),
+  ).toBe("/home-loans/bulk-import/");
+  expect(savedCore.status).toBe("reviewed");
+});
+
+it("hides saved-quote handoff controls and history while retaining review, comments and pricing", async () => {
+  mocks.query = "?id=1";
+  window.history.replaceState(null, "", "/home-loans/quote/?id=1");
+  mocks.getQuote.mockResolvedValue(savedQuote);
+  mocks.getCore.mockResolvedValue({
+    ...savedCore,
+    history: [
+      {
+        id: 1,
+        action: "assigned",
+        quoteId: 1,
+        detail: "Assigned to Sample reviewer.",
+        actor: "Demo user",
+        createdAt: savedQuote.createdAt,
+      },
+    ],
+  });
+  mocks.getHistory.mockResolvedValue([savedQuote]);
+  render(<QuoteDetailPage area="home" />);
+  await screen.findByRole("heading", { name: "Handoff" });
+  expect(screen.getByText("Update handoff")).toBeTruthy();
+  await act(async () => {
+    mocks.showHandoff = false;
+    for (const listener of mocks.displayListeners) listener();
+  });
+  expect(screen.queryByRole("heading", { name: "Handoff" })).toBeNull();
+  expect(screen.queryByText("Update handoff")).toBeNull();
+  expect(screen.queryByText("Assigned to Sample reviewer.")).toBeNull();
+  expect(screen.getByText("Current")).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Review" })).toBeTruthy();
+  expect(
+    screen.getByRole("heading", { name: "Record review decision" }),
+  ).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Comments" })).toBeTruthy();
+  expect(
+    screen.getByText("Saved pricing decision remains visible."),
+  ).toBeTruthy();
 });

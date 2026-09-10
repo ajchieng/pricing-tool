@@ -12,7 +12,7 @@ Home, Personal and Commercial retain separate inputs, engines and saved records.
 
 The application opens directly on a three-product workspace. Preserve the existing paper-light workspace, dark evergreen navigation, product-specific colour accents, serif tabular figures, structured form sections and transparent results. The app is an operating interface, not a marketing landing page.
 
-Each visitor owns browser-local records, with useful initial scenarios and a reset action. There are no accounts, roles, administration, live ingestion, shared data or server endpoints. Errors must explain how to recover, and saves must be acknowledged only after storage commits.
+Each visitor owns browser-local records, with useful initial scenarios and a reset action. The full pricing configuration workspace uses the original product screens. Configuration changes affect new quotes and guides in this browser; saved snapshots remain frozen. There are no accounts, sign-in, live ingestion, shared data or server endpoints. Errors must explain how to recover, and saves must be acknowledged only after storage commits.
 
 ## Accessibility
 

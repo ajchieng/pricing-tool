@@ -96,13 +96,7 @@ async function scan(file) {
   }
 }
 for (const root of roots) await scan(root);
-for (const directory of [
-  "src/app/api",
-  "src/app/admin",
-  "src/app/login",
-  "prisma",
-  "infra",
-]) {
+for (const directory of ["src/app/api", "src/app/login", "prisma", "infra"]) {
   try {
     await stat(directory);
     process.stderr.write(`Excluded directory present: ${directory}\n`);

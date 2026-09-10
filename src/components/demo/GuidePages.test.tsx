@@ -10,6 +10,8 @@ import {
   getCommercialGuidePolicy,
 } from "@/components/score-guide/demo-guide-policy";
 
+vi.mock("./DemoProvider", () => ({ useDemo: () => ({ ready: true }) }));
+
 vi.mock("next/navigation", () => ({ usePathname: () => "/home-loans/guide/" }));
 
 describe("restored pricing guides", () => {

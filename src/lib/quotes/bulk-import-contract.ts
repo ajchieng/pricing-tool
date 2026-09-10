@@ -1,0 +1,2 @@
+export const BULK_QUOTE_IMPORT_MAX_ROWS = 25;
+export const BULK_QUOTE_IMPORT_MAX_FILE_BYTES = 2 * 1024 * 1024;

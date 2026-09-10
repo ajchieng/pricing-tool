@@ -111,6 +111,7 @@ test("all guides, quote exports and missing routes work on the static host", asy
 test("desktop and mobile visual and accessibility review", async ({
   page,
 }, testInfo) => {
+  test.setTimeout(120_000);
   const errors: string[] = [],
     external: string[] = [];
   const findings: Array<{ page: string; issue: string; nodes?: unknown }> = [];
@@ -126,6 +127,11 @@ test("desktop and mobile visual and accessibility review", async ({
     ["home-detail", "/home-loans/quote/?id=2"],
     ["market", "/market-search/"],
     ["guide", "/personal-loans/guide/"],
+    ["configuration", "/admin/"],
+    ["configuration-rates", "/admin/home-loans/rates/"],
+    ["configuration-score", "/admin/home-loans/score-model/"],
+    ["configuration-profitability", "/admin/home-loans/profitability/"],
+    ["configuration-market", "/admin/market-search/"],
   ] as const) {
     await page.goto(url);
     if (name === "workspace")
@@ -147,9 +153,28 @@ test("desktop and mobile visual and accessibility review", async ({
       await expect(page.getByRole("heading", { level: 1 })).toContainText(
         "Alex Morgan",
       );
+    if (name.startsWith("configuration"))
+      await expect(
+        page.getByRole("heading", { name: "Configuration", exact: true }),
+      ).toBeVisible();
+    if (name === "configuration")
+      await expect(
+        page
+          .getByRole("navigation", { name: "Admin sections" })
+          .getByRole("link", { name: "Admin overview", exact: true }),
+      ).toHaveAttribute("aria-current", "page");
+    if (name.startsWith("configuration"))
+      await expect(
+        page
+          .getByRole("navigation", { name: "Admin sections" })
+          .locator('a[aria-current="page"]'),
+      ).toBeInViewport({ ratio: 1 });
     await page.evaluate(() => document.fonts.ready);
     const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > window.innerWidth + 1,
+      () =>
+        document.documentElement.scrollWidth >
+          document.documentElement.clientWidth + 1 ||
+        window.innerWidth > document.documentElement.clientWidth + 1,
     );
     if (overflow)
       findings.push({ page: name, issue: "Page overflows the viewport" });

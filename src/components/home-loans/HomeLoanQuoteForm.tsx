@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { liveDemoProfitabilityLines } from "@/lib/demo/live-profitability-defaults";
+import { useDemoConfiguration } from "@/lib/demo/configuration-react";
 import { calculateDemo } from "@/lib/demo/pricing";
 import { saveDemoForm } from "@/lib/demo/form-adapter";
 import { demoFormError, focusDemoIssue } from "@/lib/demo/form-errors";
@@ -322,7 +324,16 @@ export function HomeLoanQuoteForm({
 
   const formalRequestedRate =
     form.requestedRate.trim() === "" ? null : Number(form.requestedRate);
+  const liveProfitLines = liveDemoProfitabilityLines(
+    form,
+    profitDefaultFlags,
+    defaultFieldStrings(profitabilityDefaults, form.channel),
+    profitInputUnit,
+    Number(form.loanAmount),
+  );
+  const configurationVersion = useDemoConfiguration().version;
   const scenarioContextKey = JSON.stringify([
+    configurationVersion,
     form.productId,
     form.loanPurpose,
     form.rateType,
@@ -355,13 +366,13 @@ export function HomeLoanQuoteForm({
     form.brokerVolumeBand,
     form.brokerDiscretionPct,
     displayedCostOfFunds,
-    form.commissions,
-    form.otherIncome,
+    liveProfitLines.commissions,
+    liveProfitLines.otherIncome,
     form.upfrontFeeOverrideEnabled,
     form.upfrontFeeOverride,
     form.monthlyFeeOverrideEnabled,
     form.monthlyFeeOverride,
-    form.expenses,
+    liveProfitLines.expenses,
     form.expectedCreditLossOverrideAmount,
     form.expectedCreditLossOverrideEnabled,
     form.expectedCreditLossOverrideReason,
@@ -552,9 +563,11 @@ export function HomeLoanQuoteForm({
   const onlineChannel = form.channel === "online";
   // User-entered line values only — untouched channel defaults don't count.
   const hasUserProfitLineValues = [
-    onlineChannel || profitDefaultFlags.commissions ? "" : form.commissions,
-    profitDefaultFlags.otherIncome ? "" : form.otherIncome,
-    profitDefaultFlags.expenses ? "" : form.expenses,
+    onlineChannel || profitDefaultFlags.commissions
+      ? ""
+      : liveProfitLines.commissions,
+    profitDefaultFlags.otherIncome ? "" : liveProfitLines.otherIncome,
+    profitDefaultFlags.expenses ? "" : liveProfitLines.expenses,
     form.expectedCreditLossOverrideAmount.trim() === "0"
       ? ""
       : form.expectedCreditLossOverrideAmount,
@@ -571,7 +584,7 @@ export function HomeLoanQuoteForm({
 
   function changeChannel(next: ProfitabilityChannel) {
     if (next === "online" && form.channel !== "online") {
-      commissionBeforeOnlineRef.current = form.commissions;
+      commissionBeforeOnlineRef.current = liveProfitLines.commissions;
     }
     setForm((current) => ({
       ...current,
@@ -650,6 +663,7 @@ export function HomeLoanQuoteForm({
     return buildHomeQuoteRequest(
       {
         ...form,
+        ...liveProfitLines,
         revisedFromQuoteId,
         marketRateId: attachedMarketEvidence?.marketRateId ?? null,
         costOfFundsSource,
@@ -659,7 +673,19 @@ export function HomeLoanQuoteForm({
     );
   }
 
+  const currentPricingReady =
+    result != null &&
+    !calcLoading &&
+    calcError == null &&
+    lastPricedContextKey === scenarioContextKey;
+
   async function handleSave() {
+    if (!currentPricingReady || rateScenario.active) {
+      setSaveError(
+        "Wait for current pricing to finish, and apply or reset any customer-rate scenario before saving.",
+      );
+      return;
+    }
     setSaveError(null);
     dispatchController({ type: "save_started" });
     try {
@@ -668,6 +694,7 @@ export function HomeLoanQuoteForm({
         buildPayload(),
         revisedFromQuoteId ?? undefined,
         attachedMarketEvidence,
+        configurationVersion,
       );
       markClean();
       router.push(`/home-loans/quote/?id=${saved.id}`);
@@ -721,9 +748,11 @@ export function HomeLoanQuoteForm({
     form.expectedCreditLossOverrideEnabled ||
     [
       costOfFundsSource === "default" ? "" : form.costOfFunds,
-      onlineChannel || profitDefaultFlags.commissions ? "" : form.commissions,
-      profitDefaultFlags.otherIncome ? "" : form.otherIncome,
-      profitDefaultFlags.expenses ? "" : form.expenses,
+      onlineChannel || profitDefaultFlags.commissions
+        ? ""
+        : liveProfitLines.commissions,
+      profitDefaultFlags.otherIncome ? "" : liveProfitLines.otherIncome,
+      profitDefaultFlags.expenses ? "" : liveProfitLines.expenses,
     ].some((v) => v.trim() !== "");
 
   const quoteFormTools = <QuoteFormTools>{header?.actions}</QuoteFormTools>;
@@ -830,7 +859,7 @@ export function HomeLoanQuoteForm({
   const saveReadiness = quoteReadinessMessage({
     items: sectionItems,
     calculating: calcLoading,
-    resultReady: result != null,
+    resultReady: currentPricingReady,
     scenarioActive: rateScenario.active,
     hasPricingError: Boolean(calcError && !result),
   });
@@ -900,7 +929,7 @@ export function HomeLoanQuoteForm({
             }}
             saveLabel={saveLabel}
             saving={saving}
-            saveDisabled={!result || rateScenario.active}
+            saveDisabled={!currentPricingReady || rateScenario.active}
             saveDisabledReason={
               saveReadiness === "Ready to save" ? null : saveReadiness
             }
@@ -1036,11 +1065,11 @@ export function HomeLoanQuoteForm({
               costOfFunds={displayedCostOfFunds}
               onCostOfFundsChange={changeCostOfFunds}
               costOfFundsDefaultApplied={costOfFundsSource === "default"}
-              commissions={form.commissions}
+              commissions={liveProfitLines.commissions}
               onCommissionsChange={(v) => changeProfitLine("commissions", v)}
-              otherIncome={form.otherIncome}
+              otherIncome={liveProfitLines.otherIncome}
               onOtherIncomeChange={(v) => changeProfitLine("otherIncome", v)}
-              expenses={form.expenses}
+              expenses={liveProfitLines.expenses}
               onExpensesChange={(v) => changeProfitLine("expenses", v)}
               defaultFlags={profitDefaultFlags}
               profitInputUnit={profitInputUnit}
@@ -1132,7 +1161,7 @@ export function HomeLoanQuoteForm({
               onClick={() => {
                 void handleSave();
               }}
-              disabled={saving || !result || rateScenario.active}
+              disabled={saving || !currentPricingReady || rateScenario.active}
               aria-describedby="home-save-readiness"
               title={
                 rateScenario.active

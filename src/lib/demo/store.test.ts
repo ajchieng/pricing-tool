@@ -9,6 +9,7 @@ import {
   getHistory,
   getQuote,
   initializeDemo,
+  isDemoInitialized,
   listQuotes,
   resetDemo,
   reviewQuote,
@@ -101,6 +102,14 @@ describe("the browser demo store", () => {
       expect((await getCore(quotes[0].coreId))?.area).toBe(area);
     }
     expect(await getQuote("personal", 1)).toBeUndefined();
+  });
+
+  it("checks a fresh workspace before metadata exists, then recognizes its saved seed", async () => {
+    expect(await isDemoInitialized()).toBe(false);
+    await initializeDemo([draft()]);
+    expect(await isDemoInitialized()).toBe(true);
+    closeDemoStore();
+    expect(await isDemoInitialized()).toBe(true);
   });
 
   it("copies and deeply freezes saved input and calculation snapshots", async () => {

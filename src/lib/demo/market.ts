@@ -1,4 +1,5 @@
 import type { MarketQuoteEvidenceV2 } from "@/lib/market/quote-evidence-values";
+import { isDemoMarketProductEnabled } from "./market-availability";
 
 export type MarketArea = "home" | "personal" | "commercial";
 export interface SampleMarketProduct {
@@ -141,7 +142,7 @@ export const SAMPLE_MARKET: SampleMarketProduct[] = [
 
 export function getMarketEvidence(id: string): MarketQuoteEvidenceV2 | null {
   const product = SAMPLE_MARKET.find((item) => item.id === id);
-  if (!product) return null;
+  if (!product || !isDemoMarketProductEnabled(product)) return null;
   return {
     version: 2,
     vertical: product.area,

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Plus,
+  Upload,
   ArrowLeft,
   ArrowUpDown,
   GitBranch,
@@ -24,6 +25,7 @@ import {
   Printer,
 } from "lucide-react";
 import { useDemo, WorkspaceLoading } from "./DemoProvider";
+import { useDemoDisplaySettings } from "@/lib/demo/configuration-display";
 import {
   AREA_INFO,
   date,
@@ -236,6 +238,7 @@ function RowActions({
 }
 
 export function QuotesPage({ area }: { area: DemoArea }) {
+  const { showQuoteHandoffStatus: showHandoff } = useDemoDisplaySettings();
   const { rows, error, loaded } = useQuoteRows(area);
   const params = useSearchParams();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -244,7 +247,7 @@ export function QuotesPage({ area }: { area: DemoArea }) {
   const search = params.get("q") ?? "",
     scope = params.get(copy.scope) ?? "",
     approval = params.get("approval") ?? "",
-    workflow = params.get("workflow") ?? "",
+    workflow = showHandoff ? (params.get("workflow") ?? "") : "",
     range = params.get("range") ?? "",
     starred = params.get("starred") === "1";
   const sort = params.get("sort") ?? "created",
@@ -255,6 +258,7 @@ export function QuotesPage({ area }: { area: DemoArea }) {
     // Read the browser URL so consecutive controls also merge changes made
     // before Next has committed its transition to the new search params.
     const next = new URLSearchParams(window.location.search);
+    if (!showHandoff) next.delete("workflow");
     if (!("page" in updates)) next.delete("page");
     for (const [key, value] of Object.entries(updates)) {
       if (value) next.set(key, value);
@@ -341,13 +345,24 @@ export function QuotesPage({ area }: { area: DemoArea }) {
         title={copy.title}
         caption={copy.caption}
         actions={
-          <Link href={`${info.path}/new/`} className={buttonClass("primary")}>
-            <Plus size={15} strokeWidth={2} aria-hidden />
-            New quote
-          </Link>
+          <>
+            <Link
+              href={`${info.path}/bulk-import/`}
+              className={buttonClass("secondary")}
+            >
+              <Upload size={15} strokeWidth={1.8} aria-hidden />
+              Bulk import
+            </Link>
+            <Link href={`${info.path}/new/`} className={buttonClass("primary")}>
+              <Plus size={15} strokeWidth={2} aria-hidden />
+              New quote
+            </Link>
+          </>
         }
       />
-      <div className="mb-4 grid grid-cols-6 gap-3 lg:grid-cols-5">
+      <div
+        className={`mb-4 grid grid-cols-6 gap-3 ${showHandoff ? "lg:grid-cols-5" : "lg:grid-cols-3"}`}
+      >
         <KpiTile
           className="col-span-3 lg:col-span-1"
           label="Quotes"
@@ -376,29 +391,35 @@ export function QuotesPage({ area }: { area: DemoArea }) {
           tone={flags ? "warn" : undefined}
           hint="On this page"
         />
-        <KpiTile
-          className="col-span-2 lg:col-span-1"
-          label={
-            area === "commercial" ? "Needs risk info" : "Needs credit risk"
-          }
-          value={
-            visible.filter(({ core }) => core.status === "needs_risk_info")
-              .length
-          }
-          hint="On this page · handoff queue"
-        />
-        <KpiTile
-          className="col-span-2 lg:col-span-1"
-          label="Ready for review"
-          value={
-            visible.filter(({ core }) => core.status === "ready_for_review")
-              .length
-          }
-          hint="On this page · handoff queue"
-        />
+        {showHandoff && (
+          <>
+            <KpiTile
+              className="col-span-2 lg:col-span-1"
+              label={
+                area === "commercial" ? "Needs risk info" : "Needs credit risk"
+              }
+              value={
+                visible.filter(({ core }) => core.status === "needs_risk_info")
+                  .length
+              }
+              hint="On this page · handoff queue"
+            />
+            <KpiTile
+              className="col-span-2 lg:col-span-1"
+              label="Ready for review"
+              value={
+                visible.filter(({ core }) => core.status === "ready_for_review")
+                  .length
+              }
+              hint="On this page · handoff queue"
+            />
+          </>
+        )}
       </div>
       <div className="demo-no-print mb-5">
-        <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,1fr))_auto]">
+        <div
+          className={`grid grid-cols-1 items-center gap-2 sm:grid-cols-2 lg:grid-cols-3 ${showHandoff ? "xl:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,1fr))_auto]" : "xl:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))_auto]"}`}
+        >
           <div className="relative">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-faint"
@@ -448,19 +469,21 @@ export function QuotesPage({ area }: { area: DemoArea }) {
               ),
             )}
           </select>
-          <select
-            aria-label="Filter by handoff status"
-            className={inputClass}
-            value={workflow}
-            onChange={(event) => update({ workflow: event.target.value })}
-          >
-            <option value="">All handoff statuses</option>
-            {DEMO_WORKFLOW_STATUSES.map((value) => (
-              <option key={value} value={value}>
-                {human(value)}
-              </option>
-            ))}
-          </select>
+          {showHandoff && (
+            <select
+              aria-label="Filter by handoff status"
+              className={inputClass}
+              value={workflow}
+              onChange={(event) => update({ workflow: event.target.value })}
+            >
+              <option value="">All handoff statuses</option>
+              {DEMO_WORKFLOW_STATUSES.map((value) => (
+                <option key={value} value={value}>
+                  {human(value)}
+                </option>
+              ))}
+            </select>
+          )}
           <select
             aria-label="Filter by created date"
             className={inputClass}
@@ -654,7 +677,7 @@ export function QuotesPage({ area }: { area: DemoArea }) {
                         size="sm"
                         short
                       />
-                      <WorkflowBadge status={core.status} />
+                      {showHandoff && <WorkflowBadge status={core.status} />}
                       <span className="text-xs text-muted">
                         {quote.summary.productName}
                         {area !== "home"
@@ -709,8 +732,12 @@ export function QuotesPage({ area }: { area: DemoArea }) {
                     <th className="px-3 py-2.5 text-right font-medium">DSCR</th>
                   )}
                   <th className="px-3 py-2.5 font-medium">Approval</th>
-                  <th className="px-3 py-2.5 font-medium">Handoff</th>
-                  <th className="px-3 py-2.5 font-medium">Assigned</th>
+                  {showHandoff && (
+                    <>
+                      <th className="px-3 py-2.5 font-medium">Handoff</th>
+                      <th className="px-3 py-2.5 font-medium">Assigned</th>
+                    </>
+                  )}
                   <th className="px-3 py-0 font-medium">
                     {sortButton("created", "Created")}
                   </th>
@@ -826,12 +853,16 @@ export function QuotesPage({ area }: { area: DemoArea }) {
                           short
                         />
                       </td>
-                      <td className="px-3 py-3">
-                        <WorkflowBadge status={core.status} />
-                      </td>
-                      <td className="px-3 py-3 text-muted">
-                        {core.assignee || "—"}
-                      </td>
+                      {showHandoff && (
+                        <>
+                          <td className="px-3 py-3">
+                            <WorkflowBadge status={core.status} />
+                          </td>
+                          <td className="px-3 py-3 text-muted">
+                            {core.assignee || "—"}
+                          </td>
+                        </>
+                      )}
                       <td
                         className="whitespace-nowrap px-3 py-3 text-muted"
                         title={fmtDateTime(quote.createdAt)}
@@ -1381,6 +1412,7 @@ function DemoHistoryPanel({
   open,
   onClose,
 }: QuoteRow & { revisions: DemoQuote[]; open: boolean; onClose: () => void }) {
+  const { showQuoteHandoffStatus: showHandoff } = useDemoDisplaySettings();
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (open) dialog.current?.showModal();
@@ -1477,7 +1509,7 @@ function DemoHistoryPanel({
               </dl>
               <div className="mt-3 flex flex-wrap gap-2">
                 <ApprovalBadge level={revision.summary.approval} size="sm" />
-                {revision.id === core.currentQuoteId && (
+                {showHandoff && revision.id === core.currentQuoteId && (
                   <WorkflowBadge status={core.status} />
                 )}
               </div>
@@ -1516,6 +1548,7 @@ export function QuoteDetailPage({ area }: { area: DemoArea }) {
 }
 
 function QuoteDetailContent({ area, id }: { area: DemoArea; id: number }) {
+  const { showQuoteHandoffStatus: showHandoff } = useDemoDisplaySettings();
   const { ready, version } = useDemo();
   const [quote, setQuote] = useState<DemoQuote>();
   const [core, setCore] = useState<DemoCore>();
@@ -1611,6 +1644,9 @@ function QuoteDetailContent({ area, id }: { area: DemoArea; id: number }) {
       </section>
     );
   const current = core.currentQuoteId === quote.id;
+  const visibleHistory = core.history.filter(
+    (event) => showHandoff || !["workflow", "assigned"].includes(event.action),
+  );
   return (
     <article data-product={area}>
       <ProductTabs area={area} />
@@ -1819,49 +1855,53 @@ function QuoteDetailContent({ area, id }: { area: DemoArea; id: number }) {
               Workflow
             </h2>
           </header>
-          <div className="grid border-t border-border lg:grid-cols-2 lg:divide-x lg:divide-border">
-            <section
-              className="px-4 py-5 sm:px-5"
-              aria-labelledby="handoff-summary-heading"
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <h3
-                  id="handoff-summary-heading"
-                  className="text-sm font-semibold text-ink"
-                >
-                  Handoff
-                </h3>
-                <WorkflowBadge status={core.status} />
-              </div>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                {core.status === "draft"
-                  ? "Quote saved as a draft for further work."
-                  : core.status === "ready_for_review"
-                    ? "Ready for the next review and lending decision."
-                    : core.status === "needs_risk_info"
-                      ? "Credit risk information is needed before review."
-                      : core.status === "needs_profitability_info"
-                        ? "Profitability information is needed before review."
-                        : core.status === "reviewed"
-                          ? "A review outcome has been recorded."
-                          : "This quote has been archived."}
-              </p>
-              <p className="mt-3 text-sm text-muted">
-                Assigned to{" "}
-                <span className="font-medium text-ink">
-                  {core.assignee || "Unassigned"}
-                </span>
-              </p>
-              <p className="mt-1 text-xs leading-5 text-faint">
-                Current quote #{core.currentQuoteId}
-              </p>
-              {!current && (
-                <p className="mt-3 text-xs leading-5 text-muted">
-                  Current series workflow. Open the current version to update
-                  handoff.
+          <div
+            className={`grid border-t border-border ${showHandoff ? "lg:grid-cols-2 lg:divide-x lg:divide-border" : ""}`}
+          >
+            {showHandoff && (
+              <section
+                className="px-4 py-5 sm:px-5"
+                aria-labelledby="handoff-summary-heading"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3
+                    id="handoff-summary-heading"
+                    className="text-sm font-semibold text-ink"
+                  >
+                    Handoff
+                  </h3>
+                  <WorkflowBadge status={core.status} />
+                </div>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  {core.status === "draft"
+                    ? "Quote saved as a draft for further work."
+                    : core.status === "ready_for_review"
+                      ? "Ready for the next review and lending decision."
+                      : core.status === "needs_risk_info"
+                        ? "Credit risk information is needed before review."
+                        : core.status === "needs_profitability_info"
+                          ? "Profitability information is needed before review."
+                          : core.status === "reviewed"
+                            ? "A review outcome has been recorded."
+                            : "This quote has been archived."}
                 </p>
-              )}
-            </section>
+                <p className="mt-3 text-sm text-muted">
+                  Assigned to{" "}
+                  <span className="font-medium text-ink">
+                    {core.assignee || "Unassigned"}
+                  </span>
+                </p>
+                <p className="mt-1 text-xs leading-5 text-faint">
+                  Current quote #{core.currentQuoteId}
+                </p>
+                {!current && (
+                  <p className="mt-3 text-xs leading-5 text-muted">
+                    Current series workflow. Open the current version to update
+                    handoff.
+                  </p>
+                )}
+              </section>
+            )}
             <section
               className="border-t border-border px-4 py-5 sm:px-5 lg:border-t-0"
               aria-labelledby="review-summary-heading"
@@ -1919,73 +1959,76 @@ function QuoteDetailContent({ area, id }: { area: DemoArea; id: number }) {
           </div>
           {current && (
             <>
-              <details className="demo-no-print group border-t border-border">
-                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-surface/55 sm:px-5 [&::-webkit-details-marker]:hidden">
-                  <span className="flex min-w-0 items-center gap-2.5">
-                    <Workflow size={17} className="text-muted" aria-hidden />
-                    <span>
-                      <span className="block text-sm font-semibold text-ink">
-                        Update handoff
+              {showHandoff && (
+                <details className="demo-no-print group border-t border-border">
+                  <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-surface/55 sm:px-5 [&::-webkit-details-marker]:hidden">
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <Workflow size={17} className="text-muted" aria-hidden />
+                      <span>
+                        <span className="block text-sm font-semibold text-ink">
+                          Update handoff
+                        </span>
+                        <span className="block text-xs leading-5 text-muted">
+                          Change status or assign the next action.
+                        </span>
                       </span>
-                      <span className="block text-xs leading-5 text-muted">
-                        Change status or assign the next action.
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      aria-hidden
+                      className="shrink-0 text-faint group-open:rotate-180"
+                    />
+                  </summary>
+                  <div className="grid gap-4 border-t border-border px-4 py-4 sm:grid-cols-2 sm:px-5">
+                    <label>
+                      <span className="mb-1 block text-sm font-medium text-ink">
+                        Workflow status
                       </span>
-                    </span>
-                  </span>
-                  <ChevronDown
-                    size={16}
-                    aria-hidden
-                    className="shrink-0 text-faint group-open:rotate-180"
-                  />
-                </summary>
-                <div className="grid gap-4 border-t border-border px-4 py-4 sm:grid-cols-2 sm:px-5">
-                  <label>
-                    <span className="mb-1 block text-sm font-medium text-ink">
-                      Workflow status
-                    </span>
-                    <select
-                      className={inputClass}
-                      disabled={pending}
-                      value={core.status}
-                      onChange={(event) => {
-                        const status = event.target.value as DemoWorkflowStatus;
-                        void action(
-                          () => updateWorkflow(core.id, status, quote.id),
-                          "Workflow updated.",
-                        );
-                      }}
-                    >
-                      {DEMO_WORKFLOW_STATUSES.map((status) => (
-                        <option key={status} value={status}>
-                          {human(status)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    <span className="mb-1 block text-sm font-medium text-ink">
-                      Assign to a fictional colleague
-                    </span>
-                    <select
-                      className={inputClass}
-                      disabled={pending}
-                      value={core.assignee}
-                      onChange={(event) => {
-                        const assignee = event.target.value;
-                        void action(
-                          () => assignQuote(core.id, assignee),
-                          "Assignment updated.",
-                        );
-                      }}
-                    >
-                      <option value="">Unassigned</option>
-                      <option>Demo user</option>
-                      <option>Sample adviser</option>
-                      <option>Sample reviewer</option>
-                    </select>
-                  </label>
-                </div>
-              </details>
+                      <select
+                        className={inputClass}
+                        disabled={pending}
+                        value={core.status}
+                        onChange={(event) => {
+                          const status = event.target
+                            .value as DemoWorkflowStatus;
+                          void action(
+                            () => updateWorkflow(core.id, status, quote.id),
+                            "Workflow updated.",
+                          );
+                        }}
+                      >
+                        {DEMO_WORKFLOW_STATUSES.map((status) => (
+                          <option key={status} value={status}>
+                            {human(status)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      <span className="mb-1 block text-sm font-medium text-ink">
+                        Assign to a fictional colleague
+                      </span>
+                      <select
+                        className={inputClass}
+                        disabled={pending}
+                        value={core.assignee}
+                        onChange={(event) => {
+                          const assignee = event.target.value;
+                          void action(
+                            () => assignQuote(core.id, assignee),
+                            "Assignment updated.",
+                          );
+                        }}
+                      >
+                        <option value="">Unassigned</option>
+                        <option>Demo user</option>
+                        <option>Sample adviser</option>
+                        <option>Sample reviewer</option>
+                      </select>
+                    </label>
+                  </div>
+                </details>
+              )}
               <form
                 className="demo-no-print border-t border-border px-4 py-4 sm:px-5"
                 onSubmit={(event) => {
@@ -2050,7 +2093,7 @@ function QuoteDetailContent({ area, id }: { area: DemoArea; id: number }) {
               <span className="flex items-center gap-2.5">
                 <History size={17} className="text-muted" aria-hidden />
                 <span className="text-sm font-semibold text-ink">
-                  Activity history ({core.history.length})
+                  Activity history ({visibleHistory.length})
                 </span>
               </span>
               <ChevronDown
@@ -2060,7 +2103,7 @@ function QuoteDetailContent({ area, id }: { area: DemoArea; id: number }) {
               />
             </summary>
             <ol className="divide-y divide-border border-t border-border px-4 sm:px-5">
-              {[...core.history].reverse().map((event) => (
+              {[...visibleHistory].reverse().map((event) => (
                 <li className="py-3" key={event.id}>
                   <p className="text-sm">{event.detail}</p>
                   <p className="mt-1 text-xs text-muted">

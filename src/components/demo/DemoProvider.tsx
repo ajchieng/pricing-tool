@@ -9,9 +9,17 @@ import {
 } from "react";
 import {
   initializeDemo,
+  isDemoInitialized,
   resetDemo,
   subscribeDemoChanges,
 } from "@/lib/demo/store";
+import {
+  initializeDemoConfiguration,
+  resetDemoConfiguration,
+  subscribeDemoConfiguration,
+  getDemoConfigurationError,
+} from "@/lib/demo/configuration";
+import { resetDemoLocalOperations } from "@/lib/demo/local-operations";
 import { draftFromCalculation } from "@/lib/demo/presentation";
 import type { DemoArea, DemoSeedDraft } from "@/lib/demo/types";
 
@@ -32,6 +40,8 @@ const Context = createContext<DemoContext>({
 let initialization: Promise<void> | undefined;
 
 async function initializeWorkspace() {
+  await initializeDemoConfiguration();
+  if (await isDemoInitialized()) return;
   const { calculateDemo, sampleInput } = await import("@/lib/demo/pricing");
   const seeds: DemoSeedDraft[] = [];
   const names: Record<DemoArea, string[]> = {
@@ -91,9 +101,11 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   const [version, setVersion] = useState(0);
   useEffect(() => {
     let mounted = true;
+    let workspaceOpened = false;
     initialization ??= initializeWorkspace();
     void initialization
       .then(() => {
+        workspaceOpened = true;
         if (mounted) setReady(true);
       })
       .catch((cause: unknown) => {
@@ -108,15 +120,31 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = subscribeDemoChanges(() =>
       setVersion((value) => value + 1),
     );
+    const unsubscribeConfiguration = subscribeDemoConfiguration(() => {
+      if (!mounted) return;
+      setVersion((value) => value + 1);
+      const failure = getDemoConfigurationError();
+      if (failure) {
+        setError(failure.message);
+        setReady(false);
+      } else if (workspaceOpened) {
+        setError(null);
+        setReady(true);
+      }
+    });
     return () => {
       mounted = false;
+      unsubscribeConfiguration();
       unsubscribe();
     };
   }, []);
   const reset = useCallback(async () => {
     setBusy(true);
     try {
+      await resetDemoConfiguration();
+      await resetDemoLocalOperations();
       await resetDemo();
+      await initializeWorkspace();
       setError(null);
       setReady(true);
       setVersion((value) => value + 1);

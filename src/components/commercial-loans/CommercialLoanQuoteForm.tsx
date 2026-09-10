@@ -4,6 +4,8 @@ import type React from "react";
 import Link from "next/link";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { liveDemoProfitabilityLines } from "@/lib/demo/live-profitability-defaults";
+import { useDemoConfiguration } from "@/lib/demo/configuration-react";
 import { calculateDemo } from "@/lib/demo/pricing";
 import { saveDemoForm } from "@/lib/demo/form-adapter";
 import { demoFormError, focusDemoIssue } from "@/lib/demo/form-errors";
@@ -265,7 +267,20 @@ export function CommercialLoanQuoteForm({
     facilityAmount,
     profitabilityExposure,
   } = commercialRequestContext(form);
+  const liveProfitLines = liveDemoProfitabilityLines(
+    form,
+    profitDefaultFlags,
+    commercialDefaultFieldStrings(
+      profitabilityDefaults,
+      form.channel,
+      commercialFacilityTypeOf(form.facilityType),
+    ),
+    profitInputUnit,
+    profitabilityExposure,
+  );
+  const configurationVersion = useDemoConfiguration().version;
   const scenarioContextKey = JSON.stringify([
+    configurationVersion,
     form.facilityType,
     form.loanType,
     form.loanAmount,
@@ -303,11 +318,11 @@ export function CommercialLoanQuoteForm({
     form.expectedUtilisationPct,
     form.costOfFunds,
     costOfFundsSource,
-    form.commissions,
-    form.otherIncome,
+    liveProfitLines.commissions,
+    liveProfitLines.otherIncome,
     form.upfrontFeeOverride,
     form.monthlyFeeOverride,
-    form.expenses,
+    liveProfitLines.expenses,
     form.expectedCreditLossOverrideAmount,
     form.expectedCreditLossOverrideEnabled,
     form.expectedCreditLossOverrideReason,
@@ -599,7 +614,7 @@ export function CommercialLoanQuoteForm({
 
   const payload = (requestedRateForPricing?: number) =>
     buildCommercialQuoteRequest({
-      form,
+      form: { ...form, ...liveProfitLines },
       marketRateId: attachedMarketEvidence?.marketRateId ?? null,
       costOfFundsSource,
       profitInputUnit,
@@ -639,7 +654,19 @@ export function CommercialLoanQuoteForm({
     },
   );
 
+  const currentPricingReady =
+    result != null &&
+    !calculating &&
+    calcError == null &&
+    lastPricedContextKey === scenarioContextKey;
+
   const save = async () => {
+    if (!currentPricingReady || rateScenario.active) {
+      setSaveError(
+        "Wait for current pricing to finish, and apply or reset any customer-rate scenario before saving.",
+      );
+      return;
+    }
     setSaveError(null);
     dispatchController({ type: "save_started" });
     try {
@@ -648,6 +675,7 @@ export function CommercialLoanQuoteForm({
         payload(),
         revisedFromQuoteId ?? undefined,
         attachedMarketEvidence,
+        configurationVersion,
       );
       markClean();
       router.push(`/commercial-loans/quote/?id=${saved.id}`);
@@ -704,11 +732,11 @@ export function CommercialLoanQuoteForm({
     form.requestedReasonNotes.trim() !== "";
   const profitabilityProvided = Boolean(
     (costOfFundsSource === "override" && form.costOfFunds.trim()) ||
-    form.commissions.trim() ||
-    form.otherIncome.trim() ||
+    liveProfitLines.commissions.trim() ||
+    liveProfitLines.otherIncome.trim() ||
     form.upfrontFeeOverride.trim() ||
     form.monthlyFeeOverride.trim() ||
-    form.expenses.trim() ||
+    liveProfitLines.expenses.trim() ||
     (form.expectedCreditLossOverrideAmount.trim() === "0"
       ? ""
       : form.expectedCreditLossOverrideAmount) ||
@@ -874,7 +902,7 @@ export function CommercialLoanQuoteForm({
   const saveReadiness = quoteReadinessMessage({
     items: sectionItems,
     calculating,
-    resultReady: result != null,
+    resultReady: currentPricingReady,
     scenarioActive: rateScenario.active,
     hasPricingError: Boolean(calcError && !result),
   });
@@ -947,7 +975,7 @@ export function CommercialLoanQuoteForm({
             }}
             saveLabel={saveLabel}
             saving={saving}
-            saveDisabled={!result || rateScenario.active}
+            saveDisabled={!currentPricingReady || rateScenario.active}
             saveDisabledReason={
               saveReadiness === "Ready to save" ? null : saveReadiness
             }
@@ -1459,7 +1487,7 @@ export function CommercialLoanQuoteForm({
               >
                 {profitLineInput(
                   "cl-profit-commissions",
-                  form.channel === "online" ? "0" : form.commissions,
+                  form.channel === "online" ? "0" : liveProfitLines.commissions,
                   (value) => setProfitLine("commissions", value),
                   form.channel === "online",
                 )}
@@ -1471,7 +1499,7 @@ export function CommercialLoanQuoteForm({
               >
                 {profitLineInput(
                   "cl-profit-other-income",
-                  form.otherIncome,
+                  liveProfitLines.otherIncome,
                   (value) => setProfitLine("otherIncome", value),
                 )}
               </Field>
@@ -1480,8 +1508,10 @@ export function CommercialLoanQuoteForm({
                 htmlFor="cl-profit-expenses"
                 helper="Annual directly attributable operating cost. Leave blank to use the fictional default."
               >
-                {profitLineInput("cl-profit-expenses", form.expenses, (value) =>
-                  setProfitLine("expenses", value),
+                {profitLineInput(
+                  "cl-profit-expenses",
+                  liveProfitLines.expenses,
+                  (value) => setProfitLine("expenses", value),
                 )}
               </Field>
             </div>
@@ -1597,7 +1627,7 @@ export function CommercialLoanQuoteForm({
                 onClick={() => {
                   void save();
                 }}
-                disabled={!result || saving || rateScenario.active}
+                disabled={!currentPricingReady || saving || rateScenario.active}
                 aria-describedby="commercial-save-readiness"
                 title={
                   saveReadiness === "Ready to save" ? undefined : saveReadiness

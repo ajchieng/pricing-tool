@@ -1,4 +1,6 @@
 import { SAMPLE_MARKET, type SampleMarketProduct } from "./market";
+import { getDemoConfiguration, type DemoConfiguration } from "./configuration";
+import { isDemoMarketProductEnabled } from "./market-availability";
 import type { SearchFilters } from "@/lib/market/search/params";
 
 export interface SearchRate {
@@ -188,9 +190,14 @@ function matches(item: SampleMarketProduct, filters: SearchFilters): boolean {
   return true;
 }
 
-export function searchDemoMarket(filters: SearchFilters): SearchResponse {
+export function searchDemoMarket(
+  filters: SearchFilters,
+  configuration: DemoConfiguration = getDemoConfiguration(),
+): SearchResponse {
   const catalogue = SAMPLE_MARKET.filter(
-    (item) => item.area === filters.vertical,
+    (item) =>
+      item.area === filters.vertical &&
+      isDemoMarketProductEnabled(item, configuration),
   );
   const ranked = catalogue.map((item) => {
     const product = productFor(item);

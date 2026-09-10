@@ -172,7 +172,7 @@ Workspace controls use the control radius; preserved form controls use the close
 
 **Fields.** White inputs have a stronger one-pixel boundary, generous control padding and a visible two-pixel focus outline. Workspace labels sit above the field. Disabled controls retain their shape and reduce opacity.
 
-**Navigation.** Muted light text and outlined SVG icons sit on evergreen chrome. The active row uses a lighter evergreen fill and light text. Lending and Reference groups preserve the original hierarchy. Each product has a compact identity header and segmented Quotes, New quote and Guide tabs. Mobile navigation preserves the hierarchy with a focus-trapped drawer and an explicit close control.
+**Navigation.** Muted light text and outlined SVG icons sit on evergreen chrome. The active row uses a lighter evergreen fill and light text. Lending, Reference and Administration groups preserve the original hierarchy. Each product has a compact identity header and segmented Quotes, New quote and Guide tabs. Mobile navigation preserves the hierarchy with a focus-trapped drawer and an explicit close control.
 
 **Status badges.** Text carries the status meaning; a dot, matching foreground and soft background reinforce it. Semantic colors remain independent of the product accent.
 
@@ -181,6 +181,8 @@ Workspace controls use the control radius; preserved form controls use the close
 **Guides.** Score and profitability are separate linked views. Preserve the original section order, category charts, factor tables, score curves, worked examples, waterfalls and formulas. All numerical examples must use the fictional policy and agree with the browser calculations.
 
 **Market Search.** Preserve the original search field, refinements, editorial result rows, sticky product details, comparison table and mobile comparison dock. The catalogue is a fixed fictional fixture.
+
+**Configuration.** Preserve the original grouped navigation, horizontal section tabs, dense row forms, linked save/delete controls, score editor, policy preview and governance tables. Keep the exact field grouping and disclosure patterns; local persistence messages explain the demo boundary.
 
 **Decision band.** A deep product-color surface holds the large rate, approval explanation and repayments. Light text, luminous figures and subtle internal dividers maintain hierarchy. Reasons disclose in place.
 

@@ -62,7 +62,7 @@ test("public demo calculates, saves, revises and reviews without sign-in or back
     // Next.js probes exported document routes with HEAD before prefetching.
     const isStaticDocumentProbe =
       request.method() === "HEAD" &&
-      /^\/(?:(?:home|personal|commercial)-loans\/(?:(?:new|quote|revise|guide(?:\/profitability)?)\/)?|(?:market-search|about)\/)?$/.test(
+      /^\/(?:(?:home|personal|commercial)-loans\/(?:(?:new|quote|revise|bulk-import|guide(?:\/profitability)?)\/)?|(?:market-search|about|feedback)\/|admin\/(?:[a-z-]+\/)*)?$/.test(
         url.pathname,
       );
     const isStaticNextPayload =

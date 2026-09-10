@@ -16,7 +16,19 @@ IndexedDB maintains separate Home, Personal and Commercial quote stores, a share
 
 Saves allocate IDs within a transaction. Revisions verify the source is still current, write a new immutable quote, and update its operational envelope atomically. Historical quote data is never overwritten. Review operations verify both result completeness and the quote version the visitor actually reviewed.
 
-The initial fictional fixtures and their sample revisions are inserted once. Reset clears and restores only this application’s local stores in one transaction. Storage failures, incompatible versions, quota exhaustion and stale writes surface as actionable errors. Local notifications and a browser broadcast channel refresh other open tabs without transmitting data off the device.
+The initial fictional fixtures and their sample revisions are inserted once. Reset restores policy, clears feedback and restores sample quotes in a sequence of local transactions. It reports any failure and can be retried; it never reports a partial reset as successful. Storage failures, incompatible versions, quota exhaustion and stale writes surface as actionable errors. Local notifications and a browser broadcast channel refresh other open tabs without transmitting data off the device.
+
+## Configuration and operational tools
+
+The original configuration screens read typed browser policy tables rather than server models. Products, rates, adjustment rules, score factors, approval rules, margins, fees, channel defaults, expected loss and capital retain domain-specific validation. Configured rates respect active flags and effective intervals. A missing compatible expected-loss policy remains incomplete. Publishing a changed score model does not relabel an older expected-loss calibration as compatible.
+
+Personal profitability checks every channel and security scope for complete defaults. A missing, inactive or incomplete scope retains the original engine assumptions with an explicit warning and a profitability fallback flag in the saved policy snapshot; online commissions remain zero. Restoring a domain's policy records full before-and-after score-model and expected-loss-policy snapshots alongside the restored tables in the same audit transaction.
+
+The configuration database stores a versioned state plus append-only local history. A transaction rechecks the caller’s version, validates the complete resulting policy, and commits the edit and audit together. Rejected edits preserve entered form values. Pending and scheduled proposals hold the reviewed prior setting; publication fails if that target changed. Scheduled changes are published explicitly from the browser approval queue when due. A scheduled change can be cancelled with a recorded reason, allowing other due changes to proceed when its reviewed setting has become stale. Display settings affect presentation only.
+
+Configuration search indexes active applied settings and score factors, with links to the original editable rows. Audit combines committed configuration records, quote histories and feedback activity. Feedback and attachments stay in a third local store. Bulk import validates at most 25 vertical-specific JSON inputs (2 MiB total), previews each row and saves through the same calculation and quote adapters; failed rows can be retried without reimporting successful rows. No selected file is uploaded.
+
+Market source and product selections control the fictional catalogue. Selected quote evidence remains an immutable snapshot even if the catalogue is later hidden. There is no live market request or ingestion job.
 
 ## Static routes
 

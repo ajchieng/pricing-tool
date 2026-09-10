@@ -1,4 +1,5 @@
 import { calculateDemo, getDemoFormConfig } from "./pricing";
+import { getDemoConfiguration } from "./configuration";
 import { saveQuote } from "./store";
 import type { DemoArea } from "./types";
 import type { MarketQuoteEvidence } from "@/lib/market/quote-evidence-values";
@@ -9,8 +10,20 @@ export async function saveDemoForm(
   payload: Record<string, unknown>,
   revisedFromQuoteId?: number,
   marketEvidence: MarketQuoteEvidence | null = null,
+  expectedConfigurationVersion?: number,
 ) {
+  function assertCurrentPolicy() {
+    if (
+      expectedConfigurationVersion !== undefined &&
+      getDemoConfiguration().version !== expectedConfigurationVersion
+    )
+      throw new Error(
+        "Configuration changed while this quote was being priced. Wait for the updated result before saving.",
+      );
+  }
+  assertCurrentPolicy();
   const calculation = await calculateDemo(area, payload);
+  assertCurrentPolicy();
   const { result } = calculation;
   const input: Record<string, unknown> = calculation.input;
   const name =

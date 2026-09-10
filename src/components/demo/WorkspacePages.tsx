@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Plus, Search } from "lucide-react";
+import { ArrowRight, Plus, Search, MessageSquare } from "lucide-react";
 import { buttonClass } from "@/components/ui/Button";
 import { ProductAreaShell } from "@/components/ProductAreaShell";
 import { PRODUCT_AREA_LIST, type ProductArea } from "@/lib/product-areas";
@@ -217,6 +217,17 @@ export function OverviewPage() {
             everywhere are indicative pricing, not approvals.
           </p>
         </div>
+        <Link
+          href="/admin/feedback/"
+          className={buttonClass(
+            "secondary",
+            "md",
+            "shrink-0 self-start sm:self-auto",
+          )}
+        >
+          Review feedback
+          <MessageSquare size={15} strokeWidth={2} aria-hidden />
+        </Link>
       </header>
       {error && (
         <p role="alert" className="mb-5 text-alert">

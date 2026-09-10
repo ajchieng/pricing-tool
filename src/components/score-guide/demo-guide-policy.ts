@@ -11,7 +11,8 @@ import {
   personalMargins,
   personalProducts,
 } from "@/lib/demo/policy";
-import { fallbackPersonalApprovalRules } from "@/lib/pricing/personal/approval-policy";
+import { getDemoConfiguration } from "@/lib/demo/configuration";
+import type { PersonalApprovalRuleConfig } from "@/lib/pricing/personal/types";
 import type { CommercialFacilityType } from "@/lib/pricing/commercial/types";
 import { publishedRateRole } from "@/lib/pricing/rate-role";
 
@@ -22,9 +23,9 @@ export function getHomeGuidePolicy() {
     profitabilityDefaults: getDemoFormConfig("home").profitabilityDefaults,
     rateBands: homeRates.map((rate) => ({
       ...rate,
-      productName: homeProducts.find(
-        (product) => product.id === rate.productId,
-      )!.name,
+      productName:
+        homeProducts.find((product) => product.id === rate.productId)?.name ??
+        "Removed product",
       rate: rate.cardedRate,
       pricingRole: publishedRateRole(rate.pricingRole),
     })),
@@ -36,7 +37,8 @@ export function getPersonalGuidePolicy() {
     ...getDemoPolicy("personal"),
     products: personalProducts,
     marginSettings: personalMargins,
-    approvalRules: fallbackPersonalApprovalRules(),
+    approvalRules: getDemoConfiguration().tables
+      .personal_approval_rule as unknown as PersonalApprovalRuleConfig[],
     profitabilityDefaults: personalDefaults,
   };
 }

@@ -4,6 +4,8 @@ import type React from "react";
 import Link from "next/link";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { liveDemoProfitabilityLines } from "@/lib/demo/live-profitability-defaults";
+import { useDemoConfiguration } from "@/lib/demo/configuration-react";
 import { calculateDemo } from "@/lib/demo/pricing";
 import { saveDemoForm } from "@/lib/demo/form-adapter";
 import { demoFormError, focusDemoIssue } from "@/lib/demo/form-errors";
@@ -244,7 +246,20 @@ export function PersonalLoanQuoteForm({
     notes: Boolean(initialValues?.notes),
   });
   type PersonalSectionKey = keyof typeof openSections;
+  const liveProfitLines = liveDemoProfitabilityLines(
+    form,
+    profitDefaultFlags,
+    personalDefaultFieldStrings(
+      profitabilityDefaults,
+      form.channel,
+      personalProductSecurityType(form.securityType),
+    ),
+    profitInputUnit,
+    Number(form.loanAmount),
+  );
+  const configurationVersion = useDemoConfiguration().version;
   const scenarioContextKey = JSON.stringify([
+    configurationVersion,
     form.productId,
     form.loanPurpose,
     form.securityType,
@@ -276,11 +291,11 @@ export function PersonalLoanQuoteForm({
     form.brokerVolumeBand,
     form.brokerDiscretionPct,
     form.costOfFunds,
-    form.commissions,
-    form.otherIncome,
+    liveProfitLines.commissions,
+    liveProfitLines.otherIncome,
     form.upfrontFeeOverride,
     form.monthlyFeeOverride,
-    form.expenses,
+    liveProfitLines.expenses,
     form.expectedCreditLossOverrideAmount,
     form.expectedCreditLossOverrideEnabled,
     form.expectedCreditLossOverrideReason,
@@ -480,7 +495,7 @@ export function PersonalLoanQuoteForm({
 
   const payload = (requestedRateForPricing?: number) =>
     buildPersonalQuoteRequest({
-      form,
+      form: { ...form, ...liveProfitLines },
       marketRateId: attachedMarketEvidence?.marketRateId ?? null,
       costOfFundsSource,
       profitInputUnit,
@@ -521,7 +536,19 @@ export function PersonalLoanQuoteForm({
     },
   );
 
+  const currentPricingReady =
+    result != null &&
+    !calculating &&
+    calcError == null &&
+    lastPricedContextKey === scenarioContextKey;
+
   const save = async () => {
+    if (!currentPricingReady || rateScenario.active) {
+      setSaveError(
+        "Wait for current pricing to finish, and apply or reset any customer-rate scenario before saving.",
+      );
+      return;
+    }
     setSaveError(null);
     dispatchController({ type: "save_started" });
     try {
@@ -530,6 +557,7 @@ export function PersonalLoanQuoteForm({
         payload(),
         revisedFromQuoteId ?? undefined,
         attachedMarketEvidence,
+        configurationVersion,
       );
       markClean();
       router.push(`/personal-loans/quote/?id=${saved.id}`);
@@ -577,9 +605,9 @@ export function PersonalLoanQuoteForm({
   const loanAmountNum = numOrNull(form.loanAmount) ?? 0;
   const profitPercentEnabled = loanAmountNum > 0;
   const hasProfitLineValues = [
-    onlineChannel ? "" : form.commissions,
-    form.otherIncome,
-    form.expenses,
+    onlineChannel ? "" : liveProfitLines.commissions,
+    liveProfitLines.otherIncome,
+    liveProfitLines.expenses,
     form.expectedCreditLossOverrideAmount.trim() === "0"
       ? ""
       : form.expectedCreditLossOverrideAmount,
@@ -592,9 +620,9 @@ export function PersonalLoanQuoteForm({
     form.expectedCreditLossOverrideEnabled ||
     [
       costOfFundsSource === "default" ? "" : form.costOfFunds,
-      onlineChannel ? "" : form.commissions,
-      form.otherIncome,
-      form.expenses,
+      onlineChannel ? "" : liveProfitLines.commissions,
+      liveProfitLines.otherIncome,
+      liveProfitLines.expenses,
     ].some((value) => value.trim() !== "");
   const liveSummary = calcError
     ? calcError
@@ -782,7 +810,7 @@ export function PersonalLoanQuoteForm({
   const saveReadiness = quoteReadinessMessage({
     items: sectionItems,
     calculating,
-    resultReady: result != null,
+    resultReady: currentPricingReady,
     scenarioActive: rateScenario.active,
     hasPricingError: Boolean(calcError && !result),
   });
@@ -855,7 +883,7 @@ export function PersonalLoanQuoteForm({
             }}
             saveLabel={saveLabel}
             saving={saving}
-            saveDisabled={!result || rateScenario.active}
+            saveDisabled={!currentPricingReady || rateScenario.active}
             saveDisabledReason={
               saveReadiness === "Ready to save" ? null : saveReadiness
             }
@@ -1046,7 +1074,7 @@ export function PersonalLoanQuoteForm({
               >
                 {profitLineInput(
                   "pl-commissions",
-                  form.channel === "online" ? "0" : form.commissions,
+                  form.channel === "online" ? "0" : liveProfitLines.commissions,
                   (v) => setProfitLine("commissions", v),
                   form.channel === "online",
                 )}
@@ -1060,8 +1088,10 @@ export function PersonalLoanQuoteForm({
                     : "Annual dollars. Leave blank to use the channel default."
                 }
               >
-                {profitLineInput("pl-other-income", form.otherIncome, (v) =>
-                  setProfitLine("otherIncome", v),
+                {profitLineInput(
+                  "pl-other-income",
+                  liveProfitLines.otherIncome,
+                  (v) => setProfitLine("otherIncome", v),
                 )}
               </Field>
               <Field
@@ -1073,8 +1103,10 @@ export function PersonalLoanQuoteForm({
                     : "Annual dollars. Leave blank to use the secured/unsecured default."
                 }
               >
-                {profitLineInput("pl-profit-expenses", form.expenses, (v) =>
-                  setProfitLine("expenses", v),
+                {profitLineInput(
+                  "pl-profit-expenses",
+                  liveProfitLines.expenses,
+                  (v) => setProfitLine("expenses", v),
                 )}
               </Field>
             </div>
@@ -1156,7 +1188,7 @@ export function PersonalLoanQuoteForm({
               onClick={() => {
                 void save();
               }}
-              disabled={!result || saving || rateScenario.active}
+              disabled={!currentPricingReady || saving || rateScenario.active}
               aria-describedby="personal-save-readiness"
               title={
                 saveReadiness === "Ready to save" ? undefined : saveReadiness

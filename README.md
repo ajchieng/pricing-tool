@@ -13,11 +13,15 @@ A lending-pricing portfolio project by Alexander Chieng. Explore three distinct 
 - **Commercial:** term loans, overdrafts, equipment and property facilities, debt-service coverage, security, capital and profitability.
 - **Guides:** separate score and profitability views, category charts, factor rules, worked examples and printable explanations using the fictional policy.
 - **Quote workflow:** save, revise, star, assign to a fictional colleague, comment, record reviews, inspect frozen versions, print, and download JSON.
+- **Configuration:** original product and rate editors, score-model factors and previews, approval rules, margins, fees, profitability assumptions, expected-loss policies, capital, display settings, approval queue, configuration search and audit history. Edits affect new calculations and guides in this browser.
+- **Bulk import and feedback:** validate and review bounded JSON imports in each lending area; create and triage fictional feedback with local attachments.
 - **Market Search:** compare a fictional catalogue and attach a selected advertised rate as evidence. Comparison rates and fees are display context rather than pricing-policy inputs.
 
 Open a lending area, choose **New quote**, and select **Load sample scenario** to get started. The initial workspace also contains sample requested-rate scenarios and a Home revision history. **Reset demo** restores those examples.
 
 ![Lending workspace](docs/screenshots/workspace.png)
+
+![Pricing configuration](docs/screenshots/configuration.png)
 
 ## Architecture
 
@@ -27,7 +31,7 @@ Each lending domain owns its request validation, calculation engine and quote re
 
 IndexedDB stores structured copies of each quote’s normalised inputs and complete calculation result. Historical pricing is never recalculated from current policy. Revisions and workflow updates use transactions; stale revisions and stale review attempts are rejected. The sample dataset is created independently in each browser.
 
-This portfolio version demonstrates the pricing and operational interface. Multi-user access control, centrally governed publication, production database auditing and live market ingestion are outside this demo.
+This portfolio version demonstrates the pricing and operational interface. Configuration uses a separate versioned IndexedDB store. Each edit commits its policy and local audit together; stale changes are rejected. The approval queue demonstrates immediate decisions and dated publication, with due changes published explicitly from the queue. There are no background publication jobs or multi-user accounts. Market source and product controls filter the fictional catalogue without live ingestion.
 
 ## Run locally
 
@@ -70,9 +74,9 @@ This opt-in mode skips the local build and static server. Use the stable public 
 
 ## Browser data
 
-Changes stay within this site’s origin in the browser profile where they were made. Other visitors do not see them. Sharing a quote URL does not share its saved data. Clearing site data or changing domains removes access to that browser’s workspace; JSON downloads can preserve a readable copy, but this demo does not import them.
+Changes stay within this site’s origin in the browser profile where they were made. Other visitors do not see them. Sharing a quote URL does not share its saved data. Clearing site data or changing domains removes access to that browser’s workspace; JSON downloads can preserve a readable copy, and the original JSON input import tools can create new locally calculated quotes. Importing does not restore a historical saved snapshot.
 
-If browser storage is unavailable, the application explains the failure rather than pretending a quote was saved. Reset removes only Pricing Tool’s local records. The application does not send entered scenarios to analytics or an API.
+If browser storage is unavailable, the application explains the failure rather than pretending a quote was saved. Reset restores fictional policy, sample quotes, preferences and local feedback. Each store commits transactionally; a failed reset reports the failure and can be retried. The application does not send entered scenarios to analytics or an API.
 
 ## Deployment
 

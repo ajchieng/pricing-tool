@@ -9,14 +9,17 @@ import {
   Info,
   LayoutDashboard,
   Menu,
+  MessageSquare,
   RotateCcw,
   Search,
+  Settings,
   X,
 } from "lucide-react";
 import { PRODUCT_AREA_LIST } from "@/lib/product-areas";
 import { APP_SHELL_CLASS } from "@/lib/layout";
 import { buttonClass } from "@/components/ui/Button";
 import { useDemo } from "./DemoProvider";
+import { DemoDisplayPreferences } from "@/lib/demo/configuration-react";
 
 const navigationSections = [
   {
@@ -49,9 +52,26 @@ const navigationSections = [
         accentClass: "text-rail-accent",
       },
       {
+        href: "/feedback/",
+        label: "Feedback",
+        icon: MessageSquare,
+        accentClass: "text-rail-accent",
+      },
+      {
         href: "/about/",
         label: "About",
         icon: Info,
+        accentClass: "text-rail-accent",
+      },
+    ],
+  },
+  {
+    label: "Administration",
+    items: [
+      {
+        href: "/admin/",
+        label: "Configuration",
+        icon: Settings,
         accentClass: "text-rail-accent",
       },
     ],
@@ -343,6 +363,7 @@ export function DemoShell({ children }: { children: React.ReactNode }) {
   const { error, reset } = useDemo();
   return (
     <>
+      <DemoDisplayPreferences />
       <a
         href="#main-content"
         className="demo-skip sr-only fixed left-3 top-3 z-[100] rounded-md bg-surface px-4 py-2 font-medium text-ink shadow-md focus:not-sr-only"

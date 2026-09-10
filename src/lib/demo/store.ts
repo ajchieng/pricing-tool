@@ -607,6 +607,14 @@ async function seedQuotes(
   }
 }
 
+export async function isDemoInitialized(): Promise<boolean> {
+  return transaction(
+    [...DEMO_AREAS, "cores", "meta"],
+    "readonly",
+    async (tx) => (await getMeta(tx)).seeded,
+  );
+}
+
 export async function initializeDemo(
   seedDrafts?: DemoSeedDraft[],
 ): Promise<void> {

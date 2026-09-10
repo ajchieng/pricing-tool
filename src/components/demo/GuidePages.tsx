@@ -1,3 +1,6 @@
+"use client";
+
+import { useDemo, WorkspaceLoading } from "./DemoProvider";
 import { ProductAreaShell } from "@/components/ProductAreaShell";
 import type { DemoArea } from "@/lib/demo/types";
 import HomeScoreGuide from "@/components/score-guide/HomeScoreGuide";
@@ -19,7 +22,9 @@ const PROFITABILITY_GUIDES = {
 };
 
 export function GuidePage({ area }: { area: DemoArea }) {
+  const { ready } = useDemo();
   const Guide = SCORE_GUIDES[area];
+  if (!ready) return <WorkspaceLoading />;
   return (
     <ProductAreaShell area={area} canCreateQuote>
       <article data-guide>
@@ -30,7 +35,9 @@ export function GuidePage({ area }: { area: DemoArea }) {
 }
 
 export function ProfitabilityGuidePage({ area }: { area: DemoArea }) {
+  const { ready } = useDemo();
   const Guide = PROFITABILITY_GUIDES[area];
+  if (!ready) return <WorkspaceLoading />;
   return (
     <ProductAreaShell area={area} canCreateQuote>
       <article data-guide>

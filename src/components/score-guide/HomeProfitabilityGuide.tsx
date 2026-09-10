@@ -11,213 +11,9 @@ const TAX_RATE = PROFITABILITY_TAX_RATE;
 const TAX_RATE_DECIMAL = TAX_RATE.toFixed(2);
 const TAX_RATE_LABEL = fmtPct(TAX_RATE * 100);
 function exampleValue(value: number | null | undefined): number {
-  if (value == null || !Number.isFinite(value))
-    throw new Error(
-      "The fictional guide example needs a complete calculation.",
-    );
+  if (value == null || !Number.isFinite(value)) return Number.NaN;
   return value;
 }
-
-// The illustration uses the demo calculator itself; no second calibration is embedded here.
-const exampleInput = calcRequestSchema.parse(sampleInput("home"));
-const initialResult = calculateHome(exampleInput);
-const requestedRate =
-  Math.round((exampleValue(initialResult.suggestedRate) - 0.1) * 100) / 100;
-const exampleResult = calculateHome({ ...exampleInput, requestedRate });
-const exampleProfitability = exampleResult.profitability;
-const exampleLoss = exampleProfitability.expectedLoss;
-const EXAMPLE_RISK_WEIGHT_PCT = exampleValue(
-  exampleProfitability.capitalAllocation?.riskWeightPct,
-);
-const CAPITAL_RATIO_PCT = getHomeGuidePolicy().capitalRatioPct;
-const EXAMPLE = {
-  loanAmount: exampleInput.loanAmount,
-  cardedRate: exampleValue(exampleResult.cardedRate),
-  suggestedRate: exampleValue(exampleResult.suggestedRate),
-  requestedRate,
-  costOfFunds: exampleValue(exampleProfitability.costOfFunds),
-  targetMargin: exampleValue(exampleResult.margin.targetMargin),
-  hardMinimumMargin: exampleValue(exampleResult.margin.hardMinimumMargin),
-  channel: "Direct",
-  commissions: exampleValue(exampleProfitability.commissions),
-  otherIncome: exampleValue(exampleProfitability.otherIncome),
-  standardUpfrontFee: exampleProfitability.feeIncome.standardUpfrontFee,
-  chargedUpfrontFee: exampleProfitability.feeIncome.chargedUpfrontFee,
-  monthlyFee: exampleProfitability.feeIncome.monthlyFee,
-  expenses: exampleValue(exampleProfitability.expenses),
-  probabilityOfDefaultPct: exampleValue(exampleLoss?.probabilityOfDefaultPct),
-  lossGivenDefaultPct: exampleValue(exampleLoss?.lossGivenDefaultPct),
-  exposureAtDefault: exampleValue(exampleLoss?.ead?.amount),
-};
-
-const customerRate = exampleValue(exampleProfitability.customerRate);
-const estimatedMargin = exampleValue(exampleProfitability.netInterestMargin);
-const annualInterestRevenue = exampleValue(
-  exampleProfitability.estimatedAnnualInterestRevenue,
-);
-const annualFundingCost = exampleValue(
-  exampleProfitability.estimatedAnnualFundingCost,
-);
-const annualNetInterestIncome = exampleValue(
-  exampleProfitability.estimatedAnnualNetInterestIncome,
-);
-const revenueLostVsCarded = exampleValue(
-  exampleProfitability.revenueLostVsCarded,
-);
-const revenueLostVsSuggested = exampleValue(
-  exampleProfitability.revenueLostVsSuggested,
-);
-const grossMarginDollars = annualNetInterestIncome;
-const annualRecurringFeeIncome =
-  exampleProfitability.feeIncome.annualRecurringFeeIncome;
-const firstYearFeeIncome = exampleProfitability.feeIncome.firstYearFeeIncome;
-const netIncome = exampleValue(exampleProfitability.netIncome);
-const operatingProfitBeforeCreditLoss = exampleValue(
-  exampleLoss?.operatingProfitBeforeCreditLossAmount,
-);
-const expectedCreditLoss = exampleValue(
-  exampleLoss?.effectiveExpectedCreditLossAmount,
-);
-const profitBeforeTax = exampleValue(exampleProfitability.profitBeforeTax);
-const tax = exampleValue(exampleProfitability.tax);
-const profitAfterTax = exampleValue(exampleProfitability.profitAfterTax);
-const averageOutstandingBalance = exampleValue(
-  exampleProfitability.averageAssets,
-);
-const returnOnAssets = exampleValue(exampleProfitability.returnOnAssets);
-const riskWeightedAssets = exampleValue(
-  exampleProfitability.capitalAllocation?.riskWeightedAssets,
-);
-const allocatedCapital = exampleValue(
-  exampleProfitability.capitalAllocation?.allocatedCapital,
-);
-const returnOnEquity = exampleValue(
-  exampleProfitability.capitalAllocation?.returnOnEquity,
-);
-
-const FORMULA_STEPS = [
-  {
-    title: "1. Effective customer rate",
-    formula: "customerRate = effective requested rate ?? suggestedRate",
-    detail:
-      "Profitability uses the final customer rate after requested-rate and retention constraints. An eligible requested rate takes precedence; otherwise the suggested rate is used.",
-    example: `${fmtPct(EXAMPLE.requestedRate)} is present, so customerRate = ${fmtPct(customerRate)}.`,
-  },
-  {
-    title: "2. Annual interest revenue",
-    formula:
-      "interestRevenue = sum(monthly opening balance x customerRate / 1200)",
-    detail:
-      "The first-year schedule reduces principal after each monthly payment. Monthly interest is calculated on that month’s opening balance and summed over twelve months, or the remaining term if shorter.",
-    example: `The ${fmtMoney(EXAMPLE.loanAmount)} opening loan at ${fmtPct(customerRate)} produces ${fmtMoney(annualInterestRevenue, 2)} of scheduled first-year interest.`,
-  },
-  {
-    title: "3. Funding cost",
-    formula: "fundingCost = sum(monthly opening balance x costOfFunds / 1200)",
-    detail:
-      "Funding cost uses the same declining monthly opening balances as interest revenue. Quote input cost of funds wins when entered and non-negative; otherwise the matching margin setting supplies it.",
-    example: `Monthly scheduled funding costs at ${fmtPct(EXAMPLE.costOfFunds)} sum to ${fmtMoney(annualFundingCost, 2)}.`,
-  },
-  {
-    title: "4. Net interest income",
-    formula: "netInterestIncome = interestRevenue - fundingCost",
-    detail:
-      "This is the scheduled dollar spread before commissions, other income, operating expenses, expected credit loss and tax.",
-    example: `${fmtMoney(annualInterestRevenue, 2)} - ${fmtMoney(annualFundingCost, 2)} = ${fmtMoney(annualNetInterestIncome, 2)}.`,
-  },
-  {
-    title: "5. Net interest margin",
-    formula: "estimatedMargin = customerRate - costOfFunds",
-    detail:
-      "The result is percentage points, rounded to 2 decimals. Margin health compares this figure to target and hard minimum thresholds.",
-    example: `${customerRate.toFixed(2)} - ${EXAMPLE.costOfFunds.toFixed(2)} = ${fmtPct(estimatedMargin)}.`,
-  },
-  {
-    title: "6. Revenue lost versus benchmark rates",
-    formula:
-      "revenueLost = scheduled interest at benchmark rate - scheduled interest at customer rate",
-    detail:
-      "The engine constructs a separate first-year schedule at the carded or suggested benchmark rate, using the same principal and term. The difference can be negative if the customer rate is above that benchmark.",
-    example: `Scheduled interest difference: ${fmtMoney(revenueLostVsCarded, 2)} versus carded, ${fmtMoney(revenueLostVsSuggested, 2)} versus suggested.`,
-  },
-  {
-    title: "7. Gross margin dollars",
-    formula:
-      "grossMarginDollars = scheduled interest revenue - scheduled funding cost",
-    detail:
-      "The P&L waterfall uses net interest income from the declining-balance schedule. Multiplying the opening loan amount by the percentage margin would overstate this subtotal.",
-    example: `${fmtMoney(annualInterestRevenue, 2)} - ${fmtMoney(annualFundingCost, 2)} = ${fmtMoney(grossMarginDollars, 2)}.`,
-  },
-  {
-    title: "8. Net income",
-    formula:
-      "netIncome = grossMarginDollars - commissions + otherIncome + chargedUpfrontFee + (monthlyFee x 12)",
-    detail:
-      "The governed upfront and monthly fees are defaults that may each be overridden per quote. The effective monthly fee is annualised for this first-year view. Online channel always forces commissions to zero.",
-    example: `${fmtMoney(grossMarginDollars, 2)} - ${fmtMoney(EXAMPLE.commissions, 2)} + ${fmtMoney(EXAMPLE.otherIncome, 2)} + ${fmtMoney(firstYearFeeIncome, 2)} = ${fmtMoney(netIncome, 2)}.`,
-  },
-  {
-    title: "9. Operating profit before credit loss",
-    formula: "operatingProfit = netIncome - expenses",
-    detail:
-      "This subtotal remains available even when expected loss cannot be calculated.",
-    example: `${fmtMoney(netIncome, 2)} - ${fmtMoney(EXAMPLE.expenses, 2)} = ${fmtMoney(operatingProfitBeforeCreditLoss, 2)}.`,
-  },
-  {
-    title: "10. Expected credit loss",
-    formula: "ECL = exposureAtDefault x PD x LGD",
-    detail:
-      "PD comes from the risk-only score, LGD from the product and security scope, and EAD from the governed exposure method. There is no compiled or zero-loss fallback.",
-    example: `${fmtMoney(EXAMPLE.exposureAtDefault, 2)} x ${fmtPct(EXAMPLE.probabilityOfDefaultPct)} x ${fmtPct(EXAMPLE.lossGivenDefaultPct)} = ${fmtMoney(expectedCreditLoss, 2)}.`,
-  },
-  {
-    title: "11. Profit before tax",
-    formula: "profitBeforeTax = operatingProfit - expectedCreditLoss",
-    detail:
-      "When model expected loss is unavailable, an explicit provisional amount (default zero) can complete provisional P&L. Risk assessment stays incomplete and review acceptance requires a saved, reasoned override.",
-    example: `${fmtMoney(operatingProfitBeforeCreditLoss, 2)} - ${fmtMoney(expectedCreditLoss, 2)} = ${fmtMoney(profitBeforeTax, 2)}.`,
-  },
-  {
-    title: "12. Tax expense",
-    formula: `tax = max(0, profitBeforeTax) x ${TAX_RATE_DECIMAL}`,
-    detail: `The model taxes positive profit before tax at ${TAX_RATE_LABEL}. Negative profit before tax produces zero tax, not a tax benefit.`,
-    example: `max(0, ${fmtMoney(profitBeforeTax, 2)}) x ${TAX_RATE_DECIMAL} = ${fmtMoney(tax, 2)}.`,
-  },
-  {
-    title: "13. Profit after tax",
-    formula: "profitAfterTax = profitBeforeTax - tax",
-    detail:
-      "This is the final dollar profitability estimate for the quote scenario.",
-    example: `${fmtMoney(profitBeforeTax, 2)} - ${fmtMoney(tax, 2)} = ${fmtMoney(profitAfterTax, 2)}.`,
-  },
-  {
-    title: "14. Return on assets",
-    formula:
-      "returnOnAssets = (profitAfterTax / averageOutstandingBalance) x 100",
-    detail:
-      "ROA uses the average monthly opening balance from the same first-year cash-flow schedule. Profit after tax and a positive average asset base are required.",
-    example: `(${fmtMoney(profitAfterTax, 2)} / ${fmtMoney(averageOutstandingBalance, 2)}) x 100 = ${fmtPct(returnOnAssets)}.`,
-  },
-  {
-    title: "15. Risk-weighted assets",
-    formula: "riskWeightedAssets = regulatoryExposure x riskWeightPct / 100",
-    detail: `The exposure classification and risk weight are derived from APS 112. This worked example uses the calculator’s confirmed ${EXAMPLE_RISK_WEIGHT_PCT}% residential-mortgage risk weight.`,
-    example: `${fmtMoney(EXAMPLE.loanAmount)} x (${EXAMPLE_RISK_WEIGHT_PCT} / 100) = ${fmtMoney(riskWeightedAssets, 2)}.`,
-  },
-  {
-    title: "16. Allocated capital",
-    formula: "allocatedCapital = riskWeightedAssets x capitalRatioPct / 100",
-    detail: `The worked example uses the fictional ${CAPITAL_RATIO_PCT}% capital ratio used by the demo calculator. This is a pricing assumption and is not presented as an APS 112 minimum.`,
-    example: `${fmtMoney(riskWeightedAssets, 2)} x (${CAPITAL_RATIO_PCT} / 100) = ${fmtMoney(allocatedCapital, 2)}.`,
-  },
-  {
-    title: "17. Return on equity",
-    formula: "returnOnEquity = profitAfterTax / allocatedCapital x 100",
-    detail:
-      "Indicative ROE is a pricing decision-support measure derived from the saved profitability and capital snapshots.",
-    example: `(${fmtMoney(profitAfterTax, 2)} / ${fmtMoney(allocatedCapital, 2)}) x 100 = ${fmtPct(returnOnEquity)}.`,
-  },
-];
 
 const NULL_RULES = [
   [
@@ -295,6 +91,210 @@ function FormulaCard({
 
 export default function HomeProfitabilityGuide() {
   const policy = getHomeGuidePolicy();
+  // The illustration uses the demo calculator itself; no second calibration is embedded here.
+  const exampleInput = calcRequestSchema.parse(sampleInput("home"));
+  const initialResult = calculateHome(exampleInput);
+  const requestedRate =
+    initialResult.suggestedRate == null
+      ? null
+      : Math.round((initialResult.suggestedRate - 0.1) * 100) / 100;
+  const exampleResult = calculateHome({ ...exampleInput, requestedRate });
+  const exampleProfitability = exampleResult.profitability;
+  const exampleLoss = exampleProfitability.expectedLoss;
+  const EXAMPLE_RISK_WEIGHT_PCT = exampleValue(
+    exampleProfitability.capitalAllocation?.riskWeightPct,
+  );
+  const CAPITAL_RATIO_PCT = getHomeGuidePolicy().capitalRatioPct;
+  const EXAMPLE = {
+    loanAmount: exampleInput.loanAmount,
+    cardedRate: exampleValue(exampleResult.cardedRate),
+    suggestedRate: exampleValue(exampleResult.suggestedRate),
+    requestedRate,
+    costOfFunds: exampleValue(exampleProfitability.costOfFunds),
+    targetMargin: exampleValue(exampleResult.margin.targetMargin),
+    hardMinimumMargin: exampleValue(exampleResult.margin.hardMinimumMargin),
+    channel: "Direct",
+    commissions: exampleValue(exampleProfitability.commissions),
+    otherIncome: exampleValue(exampleProfitability.otherIncome),
+    standardUpfrontFee: exampleProfitability.feeIncome.standardUpfrontFee,
+    chargedUpfrontFee: exampleProfitability.feeIncome.chargedUpfrontFee,
+    monthlyFee: exampleProfitability.feeIncome.monthlyFee,
+    expenses: exampleValue(exampleProfitability.expenses),
+    probabilityOfDefaultPct: exampleValue(exampleLoss?.probabilityOfDefaultPct),
+    lossGivenDefaultPct: exampleValue(exampleLoss?.lossGivenDefaultPct),
+    exposureAtDefault: exampleValue(exampleLoss?.ead?.amount),
+  };
+
+  const customerRate = exampleValue(exampleProfitability.customerRate);
+  const estimatedMargin = exampleValue(exampleProfitability.netInterestMargin);
+  const annualInterestRevenue = exampleValue(
+    exampleProfitability.estimatedAnnualInterestRevenue,
+  );
+  const annualFundingCost = exampleValue(
+    exampleProfitability.estimatedAnnualFundingCost,
+  );
+  const annualNetInterestIncome = exampleValue(
+    exampleProfitability.estimatedAnnualNetInterestIncome,
+  );
+  const revenueLostVsCarded = exampleValue(
+    exampleProfitability.revenueLostVsCarded,
+  );
+  const revenueLostVsSuggested = exampleValue(
+    exampleProfitability.revenueLostVsSuggested,
+  );
+  const grossMarginDollars = annualNetInterestIncome;
+  const annualRecurringFeeIncome =
+    exampleProfitability.feeIncome.annualRecurringFeeIncome;
+  const firstYearFeeIncome = exampleProfitability.feeIncome.firstYearFeeIncome;
+  const netIncome = exampleValue(exampleProfitability.netIncome);
+  const operatingProfitBeforeCreditLoss = exampleValue(
+    exampleLoss?.operatingProfitBeforeCreditLossAmount,
+  );
+  const expectedCreditLoss = exampleValue(
+    exampleLoss?.effectiveExpectedCreditLossAmount,
+  );
+  const profitBeforeTax = exampleValue(exampleProfitability.profitBeforeTax);
+  const tax = exampleValue(exampleProfitability.tax);
+  const profitAfterTax = exampleValue(exampleProfitability.profitAfterTax);
+  const averageOutstandingBalance = exampleValue(
+    exampleProfitability.averageAssets,
+  );
+  const returnOnAssets = exampleValue(exampleProfitability.returnOnAssets);
+  const riskWeightedAssets = exampleValue(
+    exampleProfitability.capitalAllocation?.riskWeightedAssets,
+  );
+  const allocatedCapital = exampleValue(
+    exampleProfitability.capitalAllocation?.allocatedCapital,
+  );
+  const returnOnEquity = exampleValue(
+    exampleProfitability.capitalAllocation?.returnOnEquity,
+  );
+
+  const FORMULA_STEPS = [
+    {
+      title: "1. Effective customer rate",
+      formula: "customerRate = effective requested rate ?? suggestedRate",
+      detail:
+        "Profitability uses the final customer rate after requested-rate and retention constraints. An eligible requested rate takes precedence; otherwise the suggested rate is used.",
+      example: `${fmtPct(EXAMPLE.requestedRate)} is present, so customerRate = ${fmtPct(customerRate)}.`,
+    },
+    {
+      title: "2. Annual interest revenue",
+      formula:
+        "interestRevenue = sum(monthly opening balance x customerRate / 1200)",
+      detail:
+        "The first-year schedule reduces principal after each monthly payment. Monthly interest is calculated on that month’s opening balance and summed over twelve months, or the remaining term if shorter.",
+      example: `The ${fmtMoney(EXAMPLE.loanAmount)} opening loan at ${fmtPct(customerRate)} produces ${fmtMoney(annualInterestRevenue, 2)} of scheduled first-year interest.`,
+    },
+    {
+      title: "3. Funding cost",
+      formula:
+        "fundingCost = sum(monthly opening balance x costOfFunds / 1200)",
+      detail:
+        "Funding cost uses the same declining monthly opening balances as interest revenue. Quote input cost of funds wins when entered and non-negative; otherwise the matching margin setting supplies it.",
+      example: `Monthly scheduled funding costs at ${fmtPct(EXAMPLE.costOfFunds)} sum to ${fmtMoney(annualFundingCost, 2)}.`,
+    },
+    {
+      title: "4. Net interest income",
+      formula: "netInterestIncome = interestRevenue - fundingCost",
+      detail:
+        "This is the scheduled dollar spread before commissions, other income, operating expenses, expected credit loss and tax.",
+      example: `${fmtMoney(annualInterestRevenue, 2)} - ${fmtMoney(annualFundingCost, 2)} = ${fmtMoney(annualNetInterestIncome, 2)}.`,
+    },
+    {
+      title: "5. Net interest margin",
+      formula: "estimatedMargin = customerRate - costOfFunds",
+      detail:
+        "The result is percentage points, rounded to 2 decimals. Margin health compares this figure to target and hard minimum thresholds.",
+      example: `${fmtPct(customerRate)} - ${fmtPct(EXAMPLE.costOfFunds)} = ${fmtPct(estimatedMargin)}.`,
+    },
+    {
+      title: "6. Revenue lost versus benchmark rates",
+      formula:
+        "revenueLost = scheduled interest at benchmark rate - scheduled interest at customer rate",
+      detail:
+        "The engine constructs a separate first-year schedule at the carded or suggested benchmark rate, using the same principal and term. The difference can be negative if the customer rate is above that benchmark.",
+      example: `Scheduled interest difference: ${fmtMoney(revenueLostVsCarded, 2)} versus carded, ${fmtMoney(revenueLostVsSuggested, 2)} versus suggested.`,
+    },
+    {
+      title: "7. Gross margin dollars",
+      formula:
+        "grossMarginDollars = scheduled interest revenue - scheduled funding cost",
+      detail:
+        "The P&L waterfall uses net interest income from the declining-balance schedule. Multiplying the opening loan amount by the percentage margin would overstate this subtotal.",
+      example: `${fmtMoney(annualInterestRevenue, 2)} - ${fmtMoney(annualFundingCost, 2)} = ${fmtMoney(grossMarginDollars, 2)}.`,
+    },
+    {
+      title: "8. Net income",
+      formula:
+        "netIncome = grossMarginDollars - commissions + otherIncome + chargedUpfrontFee + (monthlyFee x 12)",
+      detail:
+        "The governed upfront and monthly fees are defaults that may each be overridden per quote. The effective monthly fee is annualised for this first-year view. Online channel always forces commissions to zero.",
+      example: `${fmtMoney(grossMarginDollars, 2)} - ${fmtMoney(EXAMPLE.commissions, 2)} + ${fmtMoney(EXAMPLE.otherIncome, 2)} + ${fmtMoney(firstYearFeeIncome, 2)} = ${fmtMoney(netIncome, 2)}.`,
+    },
+    {
+      title: "9. Operating profit before credit loss",
+      formula: "operatingProfit = netIncome - expenses",
+      detail:
+        "This subtotal remains available even when expected loss cannot be calculated.",
+      example: `${fmtMoney(netIncome, 2)} - ${fmtMoney(EXAMPLE.expenses, 2)} = ${fmtMoney(operatingProfitBeforeCreditLoss, 2)}.`,
+    },
+    {
+      title: "10. Expected credit loss",
+      formula: "ECL = exposureAtDefault x PD x LGD",
+      detail:
+        "PD comes from the risk-only score, LGD from the product and security scope, and EAD from the governed exposure method. There is no compiled or zero-loss fallback.",
+      example: `${fmtMoney(EXAMPLE.exposureAtDefault, 2)} x ${fmtPct(EXAMPLE.probabilityOfDefaultPct)} x ${fmtPct(EXAMPLE.lossGivenDefaultPct)} = ${fmtMoney(expectedCreditLoss, 2)}.`,
+    },
+    {
+      title: "11. Profit before tax",
+      formula: "profitBeforeTax = operatingProfit - expectedCreditLoss",
+      detail:
+        "When model expected loss is unavailable, an explicit provisional amount (default zero) can complete provisional P&L. Risk assessment stays incomplete and review acceptance requires a saved, reasoned override.",
+      example: `${fmtMoney(operatingProfitBeforeCreditLoss, 2)} - ${fmtMoney(expectedCreditLoss, 2)} = ${fmtMoney(profitBeforeTax, 2)}.`,
+    },
+    {
+      title: "12. Tax expense",
+      formula: `tax = max(0, profitBeforeTax) x ${TAX_RATE_DECIMAL}`,
+      detail: `The model taxes positive profit before tax at ${TAX_RATE_LABEL}. Negative profit before tax produces zero tax, not a tax benefit.`,
+      example: `max(0, ${fmtMoney(profitBeforeTax, 2)}) x ${TAX_RATE_DECIMAL} = ${fmtMoney(tax, 2)}.`,
+    },
+    {
+      title: "13. Profit after tax",
+      formula: "profitAfterTax = profitBeforeTax - tax",
+      detail:
+        "This is the final dollar profitability estimate for the quote scenario.",
+      example: `${fmtMoney(profitBeforeTax, 2)} - ${fmtMoney(tax, 2)} = ${fmtMoney(profitAfterTax, 2)}.`,
+    },
+    {
+      title: "14. Return on assets",
+      formula:
+        "returnOnAssets = (profitAfterTax / averageOutstandingBalance) x 100",
+      detail:
+        "ROA uses the average monthly opening balance from the same first-year cash-flow schedule. Profit after tax and a positive average asset base are required.",
+      example: `(${fmtMoney(profitAfterTax, 2)} / ${fmtMoney(averageOutstandingBalance, 2)}) x 100 = ${fmtPct(returnOnAssets)}.`,
+    },
+    {
+      title: "15. Risk-weighted assets",
+      formula: "riskWeightedAssets = regulatoryExposure x riskWeightPct / 100",
+      detail: `The exposure classification and risk weight are derived from APS 112. This worked example uses the calculator’s confirmed ${EXAMPLE_RISK_WEIGHT_PCT}% residential-mortgage risk weight.`,
+      example: `${fmtMoney(EXAMPLE.loanAmount)} x (${EXAMPLE_RISK_WEIGHT_PCT} / 100) = ${fmtMoney(riskWeightedAssets, 2)}.`,
+    },
+    {
+      title: "16. Allocated capital",
+      formula: "allocatedCapital = riskWeightedAssets x capitalRatioPct / 100",
+      detail: `The worked example uses the fictional ${CAPITAL_RATIO_PCT}% capital ratio used by the demo calculator. This is a pricing assumption and is not presented as an APS 112 minimum.`,
+      example: `${fmtMoney(riskWeightedAssets, 2)} x (${CAPITAL_RATIO_PCT} / 100) = ${fmtMoney(allocatedCapital, 2)}.`,
+    },
+    {
+      title: "17. Return on equity",
+      formula: "returnOnEquity = profitAfterTax / allocatedCapital x 100",
+      detail:
+        "Indicative ROE is a pricing decision-support measure derived from the saved profitability and capital snapshots.",
+      example: `(${fmtMoney(profitAfterTax, 2)} / ${fmtMoney(allocatedCapital, 2)}) x 100 = ${fmtPct(returnOnEquity)}.`,
+    },
+  ];
+
   const sampleMargin =
     policy.marginSettings.find(
       (setting) =>
@@ -365,11 +365,11 @@ export default function HomeProfitabilityGuide() {
       <section className="border-y border-border py-5">
         <h2 className="text-lg font-semibold">Current governed assumptions</h2>
         <p className="mt-2 max-w-4xl text-sm leading-6 text-muted">
-          These fictional values come from the same bundled policy used by
-          pricing. Margin rows may be more specific by product, purpose and rate
-          type; the values below show the generic row when present, or the first
-          active row. Profitability defaults visibly pre-fill the form and are
-          saved as annual dollars.
+          These fictional values come from the same browser configuration used
+          by pricing. Margin rows may be more specific by product, purpose and
+          rate type; the values below show the generic row when present, or the
+          first active row. Profitability defaults visibly pre-fill the form and
+          are saved as annual dollars.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
@@ -412,6 +412,17 @@ export default function HomeProfitabilityGuide() {
         </p>
       </section>
 
+      {(!Number.isFinite(customerRate) ||
+        exampleLoss?.status !== "calculated") && (
+        <p
+          role="status"
+          className="rounded-lg border border-border bg-panel p-4 text-sm text-muted"
+        >
+          The current configuration cannot complete every part of this worked
+          example. Configure compatible product, margin and expected-loss policy
+          to restore the missing values.
+        </p>
+      )}
       <section className="grid gap-3 md:grid-cols-5">
         <Metric
           label="Customer rate"

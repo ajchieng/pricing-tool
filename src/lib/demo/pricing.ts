@@ -42,7 +42,8 @@ import {
   homeConfigFor,
   personalConfigFor,
   commercialConfigFor,
-  demoExpectedLossPolicies,
+  getHomeExpectedLossPolicy,
+  assertCommercialDemoConfigured,
   DEMO_CAPITAL_RATIO_PCT,
   demoQuoteFees,
   type DemoArea,
@@ -53,7 +54,7 @@ export function calculateHome(req: CalcRequestInput): PricingResult {
   const config = homeConfigFor(req);
   const capitalRatioPct = DEMO_CAPITAL_RATIO_PCT;
   const quoteFeeSetting = demoQuoteFees.home;
-  const expectedLossPolicy = demoExpectedLossPolicies.home;
+  const expectedLossPolicy = getHomeExpectedLossPolicy();
   const competitorRates: import("@/lib/competitors/types").CompetitorRate[] =
     [];
   assertHomeServiceabilityNsiSupported(
@@ -282,6 +283,7 @@ export function calculateCommercial(
   input: CommercialCalcRequestInput,
 ): CommercialPricingResult {
   const config = commercialConfigFor(input);
+  assertCommercialDemoConfigured(input, config);
   const result = calculateCommercialLoanPricing(input, config);
   const risk = assessCommercialCreditRisk(
     input,

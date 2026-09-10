@@ -18,8 +18,10 @@ import {
 } from "@/lib/market/search/params";
 import { MARKET_VERTICALS, marketSearchHref } from "@/lib/market/verticals";
 import { searchDemoMarket } from "@/lib/demo/market-search";
+import { useDemoConfiguration } from "@/lib/demo/configuration-react";
 import { isDemoArea } from "@/lib/demo/presentation";
 import { SAMPLE_MARKET } from "@/lib/demo/market";
+import { isDemoMarketProductEnabled } from "@/lib/demo/market-availability";
 
 export function MarketPage() {
   const params = useSearchParams();
@@ -29,7 +31,8 @@ export function MarketPage() {
   const raw: RawSearchParams = {};
   for (const key of params.keys()) raw[key] = params.getAll(key);
   const filters = parseSearchParams(raw, vertical);
-  const response = searchDemoMarket(filters);
+  const configuration = useDemoConfiguration();
+  const response = searchDemoMarket(filters, configuration);
   const selected = response.selected;
   const preferredRate = response.results.find(
     (item) => item.product.id === selected?.id,
@@ -41,7 +44,10 @@ export function MarketPage() {
         `#market-result-${selected.id}`,
       )
     : null;
-  const catalogue = SAMPLE_MARKET.filter((item) => item.area === vertical);
+  const catalogue = SAMPLE_MARKET.filter(
+    (item) =>
+      item.area === vertical && isDemoMarketProductEnabled(item, configuration),
+  );
 
   return (
     <div className={response.comparison.length ? "pb-24" : undefined}>
